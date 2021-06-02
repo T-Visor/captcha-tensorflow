@@ -29,7 +29,7 @@ fill_color = [(64, 107, 76), (0, 87, 128), (0, 3, 82), (191, 0, 255), (72, 189, 
 
 def main():
     i = 1
-    while (i < 10):
+    while (i < 10000):
         generate_captcha_image()
         i += 1
 
