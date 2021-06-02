@@ -5,6 +5,8 @@
 images/*
 log/*
 
+datasets/captcha_img/*
+
 # self defined
 db.sqlite3
 media/*
