@@ -1,6 +1,7 @@
 #/usr/bin/env python3
 
 from PIL import Image, ImageDraw, ImageFont
+import os
 import string, random 
 
 # RGB values for color
@@ -28,6 +29,8 @@ fill_color = [(64, 107, 76), (0, 87, 128), (0, 3, 82), (191, 0, 255), (72, 189, 
 
 
 def main():
+    os.mkdir('captcha_img') 
+
     i = 1
     while (i < 10000):
         generate_captcha_image()

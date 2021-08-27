@@ -6,6 +6,7 @@ images/*
 log/*
 
 datasets/captcha_img/*
+my_model/*
 
 # self defined
 db.sqlite3
