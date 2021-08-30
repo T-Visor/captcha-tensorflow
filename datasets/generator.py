@@ -1,10 +1,13 @@
 #/usr/bin/env python3
 
 from PIL import Image, ImageDraw, ImageFont
+import argparse
 import os
-import string, random 
+import random 
+import string
+import sys
 
-# RGB values for color
+# RGB values for custom colors
 FOREST_GREEN = (64, 107, 76)
 SEA_BLUE = (0, 87, 128)
 DARK_INDIGO = (0, 3, 82)
@@ -17,24 +20,51 @@ DARK_BLUE = (0, 3, 82)
 # lambda function - used to pick a random location in image
 getit = lambda : (random.randrange(0, 80), random.randrange(0, 60))
 
-# pick random colors for points
-colors = ['black', 'red', 'blue', 'green', (64, 107, 76), (0, 87, 128), (0, 3, 82)]
-#colors = ['black', 'red', 'blue', 'green', FOREST_GREEN, SEA_BLUE, DARK_BLUE]
-
-# pick a random colors for lines
-fill_color = [(64, 107, 76), (0, 87, 128), (0, 3, 82), (191, 0, 255), (72, 189, 0), (189, 107, 0), (189, 41, 0)]
-#fill_color = [FOREST_GREEN, SEA_BLUE, DARK_INDIGO, PINK, LIGHT_GREEN, ORANGE, RED]
+POINT_COLORS = ['black', 'red', 'blue', 'green', FOREST_GREEN, SEA_BLUE, DARK_BLUE]
+LINE_POINT_COLORS = [FOREST_GREEN, SEA_BLUE, DARK_INDIGO, PINK, LIGHT_GREEN, ORANGE, RED]
+FONT_NAME = ''
 
 
 
 
 def main():
-    os.mkdir('captcha_img') 
+    parser = parse_commandline_argument()
+
+    global FONT_NAME 
+    FONT_NAME = parser.font[0]
+
+    os.makedirs('captcha_img', exist_ok=True)
 
     i = 1
     while (i < 10000):
         generate_captcha_image()
         i += 1
+
+
+
+
+def parse_commandline_argument():
+    """ 
+        Parse the arguments from the command-line.
+
+        If no arguments are passed, the help screen will
+        be shown and the program will be terminated.
+
+    Returns:
+        the parser with the command-line argument
+    """
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('-f', '--font', nargs=1, required=True, 
+                        help='The font file with extension ".ttf" to use \
+                              (example: "DejaVuSansMono.ttf")')
+    
+    # if no arguments were passed, show the help screen
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit()
+
+    return parser.parse_args()
 
 
 
@@ -51,11 +81,11 @@ def generate_captcha_image():
 
     # draw some random lines
     for i in range(5,random.randrange(6, 10)):
-        illustrater.line((getit(), getit()), fill=random.choice(fill_color), width=random.randrange(1,3))
+        illustrater.line((getit(), getit()), fill=random.choice(LINE_POINT_COLORS), width=random.randrange(1,3))
 
     # draw some random points
     for i in range(10,random.randrange(11, 20)):
-        illustrater.point((getit(), getit(), getit(), getit(), getit(), getit(), getit(), getit(), getit(), getit()), fill=random.choice(colors))
+        illustrater.point((getit(), getit(), getit(), getit(), getit(), getit(), getit(), getit(), getit(), getit()), fill=random.choice(POINT_COLORS))
 
     # save the newly generate CAPTCHA image
     captcha_image.save('captcha_img/' + captcha_string + '_image.png')
@@ -81,9 +111,8 @@ def generate_random_string(captcha_length: int, character_set: str) -> str:
 
 
 def get_colored_text(illustrater, captcha_string):
-    text_colors = random.choice(colors)
-    font_name = 'DejaVuSansMono.ttf'
-    font = ImageFont.truetype(font_name, 18)
+    text_colors = random.choice(POINT_COLORS)
+    font = ImageFont.truetype(FONT_NAME, 18)
     illustrater.text((20,20), captcha_string, fill=text_colors, font=font)
 
 
