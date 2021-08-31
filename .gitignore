@@ -6,6 +6,7 @@ images/*
 log/*
 
 datasets/captcha_img/*
+datasets/OpenSans-Italic/*
 my_model/*
 
 # self defined
