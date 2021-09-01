@@ -23,7 +23,7 @@ getit = lambda : (random.randrange(0, 80), random.randrange(0, 60))
 POINT_COLORS = ['black', 'red', 'blue', 'green', FOREST_GREEN, SEA_BLUE, DARK_BLUE]
 LINE_POINT_COLORS = [FOREST_GREEN, SEA_BLUE, DARK_INDIGO, PINK, LIGHT_GREEN, ORANGE, RED]
 FONT_NAME = ''
-DESTINATION_DIRECTORY = ''
+DESTINATION_DIRECTORY = 'datasets/'
 
 
 
@@ -35,10 +35,13 @@ def main():
     FONT_NAME = parser.font[0]
 
     global DESTINATION_DIRECTORY
-    DESTINATION_DIRECTORY = FONT_NAME.strip('.ttf')
+    DESTINATION_DIRECTORY = DESTINATION_DIRECTORY + os.path.splitext(FONT_NAME)[0]
+
+    print('Saving to: ' + DESTINATION_DIRECTORY)
 
     os.makedirs(DESTINATION_DIRECTORY, exist_ok=True)
 
+    print('Generating CAPTCHA images')
     i = 1
     while (i < 10000):
         generate_captcha_image()
@@ -116,7 +119,7 @@ def generate_random_string(captcha_length: int, character_set: str) -> str:
 
 def get_colored_text(illustrater, captcha_string):
     text_colors = random.choice(POINT_COLORS)
-    font = ImageFont.truetype(FONT_NAME, 18)
+    font = ImageFont.truetype('fonts/' + FONT_NAME, 18)
     illustrater.text((20,20), captcha_string, fill=text_colors, font=font)
 
 

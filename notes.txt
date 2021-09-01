@@ -1,4 +1,0 @@
-- Move code which shuffles data frame indeces to a separate file
-- Remove unused imports from original notebook file
-- Create new notebooks for testing separate data sets using the reusable
-  functions
