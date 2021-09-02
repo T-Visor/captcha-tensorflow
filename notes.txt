@@ -1,1 +1,5 @@
 Test with one other font type and list accuracy/loss metrics
+
+Test with black and white images
+
+Test with images which have added perturbations
