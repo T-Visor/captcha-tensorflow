@@ -1,0 +1,7 @@
+------------------------------
+- Binary thresholding
+- Localization, segmentation, and recognition
+- Implementation example: https://www.kaggle.com/sergei416/captchas-eda/data
+------------------------------
+
+
