@@ -1,0 +1,28 @@
+https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/42241.pdf
+
+- Uses a unified approach to combine the steps of localization, segmentation,
+  and recognition
+
+- Recognizes multi-character text in unconstrained natural photographs using
+  Street View House Numbers dataset
+
+- Uses a CNN to work directly on pixel values
+
+- The Street View House Numbers dataset contains images with each number
+  boxed off. The approach in this paper will recognize them all at once
+  rather than separating and cropping each numerical instance.
+
+- Approach: find the rectangular bounding box, expand the bounding box by 30%
+  in either direction, and resize to 64x64. This creates several variations of
+  the same image.
+
+- Best architecture consists of eight convolutional hidden layers, one locally
+  connected hidden layer, and two densely connected hidden layers
+
+- All connections are feedforward and go from one
+  layer to the next (no skip connections)
+
+- Significant accuracy gains up to 9 layers for the neural network structure
+
+- Caveat, this approach assumes a character length of at most 5 (bounded
+  length). Does not scale with greater character lengths, only less.
