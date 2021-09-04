@@ -8,17 +8,14 @@ FONTS =['/usr/share/fonts/TTF/System San Francisco Display Regular.ttf',
         '/usr/share/fonts/TTF/DejaVuSerif.ttf']
 
 
-# change this back to 10,000 later
-for i in range(0, 10):
-    captcha_text = str(i)
+
+
+for number in range(0, 10000):
+    # 4 significant digits for every number.
+    captcha_text = str(number)
     captcha_text = captcha_text.zfill(4)
-    print(captcha_text)
 
-    # Create an image instance of the given size
+    # Create and save the CAPTCHA image.
     image = ImageCaptcha(width = 80, height = 60, fonts=FONTS)
-
-    # generate the image of the given text
     data = image.generate(captcha_text)  
-
-    # write the image on the given file and save it
-    image.write(captcha_text, captcha_text + '_image.png')
+    image.write(captcha_text, 'datasets/training/' + captcha_text + '_alt.png')
