@@ -3,3 +3,6 @@ Test with one other font type and list accuracy/loss metrics
 Test with black and white images
 
 Test with images which have added perturbations
+
+Possibility: Create labelled CAPTCHAs, then create a GAN to produce more
+CAPTCHAs for a training set, and use that data to train a model
