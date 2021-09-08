@@ -7,7 +7,7 @@ import random
 import string
 import sys
 
-# RGB values for custom colors
+# GLOBALS
 FOREST_GREEN = (64, 107, 76)
 SEA_BLUE = (0, 87, 128)
 DARK_INDIGO = (0, 3, 82)
@@ -16,14 +16,13 @@ LIGHT_GREEN = (72, 189, 0)
 ORANGE = (189, 107, 0)
 RED = (189, 41, 0)
 DARK_BLUE = (0, 3, 82)
-
-# lambda function - used to pick a random location in image
-getit = lambda : (random.randrange(0, 80), random.randrange(0, 60))
-
 POINT_COLORS = ['black', 'red', 'blue', 'green', FOREST_GREEN, SEA_BLUE, DARK_BLUE]
 LINE_POINT_COLORS = [FOREST_GREEN, SEA_BLUE, DARK_INDIGO, PINK, LIGHT_GREEN, ORANGE, RED]
 FONT_NAME = ''
 DESTINATION_DIRECTORY = 'datasets/'
+
+# lambda function - used to pick a random location in image
+getit = lambda : (random.randrange(0, 80), random.randrange(0, 60))
 
 
 
@@ -42,9 +41,9 @@ def main():
     os.makedirs(DESTINATION_DIRECTORY, exist_ok=True)
 
     print('Generating CAPTCHA images')
-    i = 1
+    i = 0
     while (i < 10000):
-        generate_captcha_image()
+        generate_numeric_captcha_image(i)
         i += 1
 
 
@@ -76,9 +75,33 @@ def parse_commandline_argument():
 
 
 
+def generate_numeric_captcha_image(number):
+    # create a colored image with white background
+    captcha_image = Image.new('RGB', (80, 60), color="white")
+    illustrater = ImageDraw.Draw(captcha_image)
+
+    # generate the colored number
+    captcha_text = str(number)
+    captcha_text = captcha_text.zfill(4)
+    get_colored_text(illustrater, captcha_text)
+
+    # draw some random lines
+    for i in range(5,random.randrange(6, 10)):
+        illustrater.line((getit(), getit()), fill=random.choice(LINE_POINT_COLORS), width=random.randrange(1,3))
+
+    # draw some random points
+    for i in range(10,random.randrange(11, 20)):
+        illustrater.point((getit(), getit(), getit(), getit(), getit(), getit(), getit(), getit(), getit(), getit()), fill=random.choice(POINT_COLORS))
+
+    # save the newly generate CAPTCHA image
+    captcha_image.save(DESTINATION_DIRECTORY + '/' + captcha_text + '_image.png')
+
+
+
+
 def generate_captcha_image():
     
-    # create a colored 100x100 image with white background
+    # create a colored image with white background
     captcha_image = Image.new('RGB', (80, 60), color="white")
     illustrater = ImageDraw.Draw(captcha_image)
 
