@@ -22,7 +22,7 @@ FONT_NAME = ''
 DESTINATION_DIRECTORY = 'datasets/'
 
 # lambda function - used to pick a random location in image
-getit = lambda : (random.randrange(0, 80), random.randrange(0, 60))
+get_image_location = lambda : (random.randrange(0, 80), random.randrange(0, 60))
 
 
 
@@ -78,22 +78,25 @@ def parse_commandline_argument():
 def generate_numeric_captcha_image(number):
     # create a colored image with white background
     captcha_image = Image.new('RGB', (80, 60), color="white")
-    illustrater = ImageDraw.Draw(captcha_image)
+    illustrator = ImageDraw.Draw(captcha_image)
 
     # generate the colored number
     captcha_text = str(number)
     captcha_text = captcha_text.zfill(4)
-    get_colored_text(illustrater, captcha_text)
+    get_colored_text(illustrator, captcha_text)
 
     # draw some random lines
-    for i in range(5,random.randrange(6, 10)):
-        illustrater.line((getit(), getit()), fill=random.choice(LINE_POINT_COLORS), width=random.randrange(1,3))
+    for _ in range(5,random.randrange(6, 10)):
+        illustrator.line((get_image_location(), get_image_location()), fill=random.choice(LINE_POINT_COLORS), width=random.randrange(1,3))
 
     # draw some random points
-    for i in range(10,random.randrange(11, 20)):
-        illustrater.point((getit(), getit(), getit(), getit(), getit(), getit(), getit(), getit(), getit(), getit()), fill=random.choice(POINT_COLORS))
+    for _ in range(10,random.randrange(11, 20)):
+        illustrator.point((get_image_location(), get_image_location(), get_image_location(), get_image_location(), 
+                           get_image_location(), get_image_location(), get_image_location(), 
+                           get_image_location(), get_image_location(), get_image_location()), 
+                           fill=random.choice(POINT_COLORS))
 
-    # save the newly generate CAPTCHA image
+    # save the newly generated CAPTCHA image
     captcha_image.save(DESTINATION_DIRECTORY + '/' + captcha_text + '_image.png')
 
 
@@ -103,19 +106,22 @@ def generate_captcha_image():
     
     # create a colored image with white background
     captcha_image = Image.new('RGB', (80, 60), color="white")
-    illustrater = ImageDraw.Draw(captcha_image)
+    illustrator = ImageDraw.Draw(captcha_image)
 
     # generate a randomly colored string
     captcha_string = generate_random_string(4, 'numeric')
-    get_colored_text(illustrater, captcha_string)
+    get_colored_text(illustrator, captcha_string)
 
     # draw some random lines
-    for i in range(5,random.randrange(6, 10)):
-        illustrater.line((getit(), getit()), fill=random.choice(LINE_POINT_COLORS), width=random.randrange(1,3))
+    for _ in range(5,random.randrange(6, 10)):
+        illustrator.line((get_image_location(), get_image_location()), fill=random.choice(LINE_POINT_COLORS), width=random.randrange(1,3))
 
     # draw some random points
-    for i in range(10,random.randrange(11, 20)):
-        illustrater.point((getit(), getit(), getit(), getit(), getit(), getit(), getit(), getit(), getit(), getit()), fill=random.choice(POINT_COLORS))
+    for _ in range(10,random.randrange(11, 20)):
+        illustrator.point((get_image_location(), get_image_location(), get_image_location(), get_image_location(), 
+                           get_image_location(), get_image_location(), get_image_location(), 
+                           get_image_location(), get_image_location(), get_image_location()), 
+                           fill=random.choice(POINT_COLORS))
 
     # save the newly generate CAPTCHA image
     captcha_image.save(DESTINATION_DIRECTORY + '/' + captcha_string + '_image.png')
@@ -140,10 +146,10 @@ def generate_random_string(captcha_length: int, character_set: str) -> str:
 
 
 
-def get_colored_text(illustrater, captcha_string):
+def get_colored_text(illustrator, captcha_string):
     text_colors = random.choice(POINT_COLORS)
     font = ImageFont.truetype('fonts/' + FONT_NAME, 18)
-    illustrater.text((20,20), captcha_string, fill=text_colors, font=font)
+    illustrator.text((20,20), captcha_string, fill=text_colors, font=font)
 
 
 
