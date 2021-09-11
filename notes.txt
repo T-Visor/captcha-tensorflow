@@ -1,9 +1,15 @@
-Test with one other font type and list accuracy/loss metrics
-
 Test with black and white images
 
 Test with images which have added perturbations
 
+neural networks reference:
+https://towardsdatascience.com/the-4-convolutional-neural-network-models-that-can-classify-your-fashion-images-9fe7f3e5399d
+
+VGG16 reference:
+https://towardsdatascience.com/step-by-step-vgg16-implementation-in-keras-for-beginners-a833c686ae6c
+
+
+--------------------------------------------------------------------------------------
 Possibility: Create labelled CAPTCHAs, then create a GAN to produce more
 CAPTCHAs for a training set, and use that data to train a model
 
