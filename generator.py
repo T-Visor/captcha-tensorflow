@@ -1,4 +1,4 @@
-#/usr/bin/env python3
+#!/usr/bin/env python3
 
 from PIL import Image, ImageDraw, ImageFont
 import argparse
@@ -19,28 +19,31 @@ DARK_BLUE = (0, 3, 82)
 POINT_COLORS = ['black', 'red', 'blue', 'green', FOREST_GREEN, SEA_BLUE, DARK_BLUE]
 LINE_POINT_COLORS = [FOREST_GREEN, SEA_BLUE, DARK_INDIGO, PINK, LIGHT_GREEN, ORANGE, RED]
 FONT_NAME = ''
-DESTINATION_DIRECTORY = 'datasets/'
+DESTINATION_DIRECTORY = 'datasets/multi-fonts/'
 
-# lambda function - used to pick a random location in image
+FONTS = [r'/usr/share/fonts/TTF/DejaVuSans.ttf',
+         r'/usr/share/fonts/TTF/DejaVuSerif.ttf',
+         r'/usr/share/fonts/TTF/OpenSans-Bold.ttf',
+         r'/usr/share/fonts/TTF/OpenSans-Light.ttf',
+         r'/usr/share/fonts/TTF/System San Francisco Display Regular.ttf',
+         r'/usr/share/fonts/TTF/MesloLGS-NF-Italic.ttf'
+        ]
+
+# Get two random locations on the CAPTCHA image
 get_image_location = lambda : (random.randrange(0, 80), random.randrange(0, 60))
+
+# Get a random font
+get_font = lambda : (random.choice(FONTS)) 
 
 
 
 
 def main():
-    parser = parse_commandline_argument()
-
-    global FONT_NAME 
-    FONT_NAME = parser.font[0]
-
-    global DESTINATION_DIRECTORY
-    DESTINATION_DIRECTORY = DESTINATION_DIRECTORY + os.path.splitext(FONT_NAME)[0]
 
     print('Saving to: ' + DESTINATION_DIRECTORY)
-
     os.makedirs(DESTINATION_DIRECTORY, exist_ok=True)
-
     print('Generating CAPTCHA images')
+
     i = 0
     while (i < 10000):
         generate_numeric_captcha_image(i)
@@ -147,9 +150,14 @@ def generate_random_string(captcha_length: int, character_set: str) -> str:
 
 
 def get_colored_text(illustrator, captcha_string):
-    text_colors = random.choice(POINT_COLORS)
-    font = ImageFont.truetype('fonts/' + FONT_NAME, 18)
-    illustrator.text((20,20), captcha_string, fill=text_colors, font=font)
+    digit_position = 20
+
+    for i in range(len(captcha_string)):
+        text_color = random.choice(POINT_COLORS)
+        character = captcha_string[i]
+        font = ImageFont.truetype(get_font(), 18)
+        illustrator.text((digit_position,20), character, fill=text_color, font=font)
+        digit_position = digit_position + 10
 
 
 
