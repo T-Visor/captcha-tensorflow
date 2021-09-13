@@ -1,6 +1,7 @@
 # .gitignore by JackonYang
 
 .ipynb_checkpoints/*
+notebooks/.ipynb_checkpoints/*
 
 images/*
 log/*
