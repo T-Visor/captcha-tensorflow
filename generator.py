@@ -6,6 +6,7 @@ import os
 import random 
 import string
 import sys
+import uuid
 
 # GLOBALS
 FOREST_GREEN = (64, 107, 76)
@@ -19,7 +20,7 @@ DARK_BLUE = (0, 3, 82)
 POINT_COLORS = ['black', 'red', 'blue', 'green', FOREST_GREEN, SEA_BLUE, DARK_BLUE]
 LINE_POINT_COLORS = [FOREST_GREEN, SEA_BLUE, DARK_INDIGO, PINK, LIGHT_GREEN, ORANGE, RED]
 FONT_NAME = ''
-DESTINATION_DIRECTORY = 'datasets/multi-fonts/'
+DESTINATION_DIRECTORY = 'datasets/multi-fonts-many/'
 
 FONTS = [r'/usr/share/fonts/TTF/DejaVuSans.ttf',
          r'/usr/share/fonts/TTF/DejaVuSerif.ttf',
@@ -99,8 +100,9 @@ def generate_numeric_captcha_image(number):
                            get_image_location(), get_image_location(), get_image_location()), 
                            fill=random.choice(POINT_COLORS))
 
-    # save the newly generated CAPTCHA image
-    captcha_image.save(DESTINATION_DIRECTORY + '/' + captcha_text + '_image.png')
+    # save the newly generate CAPTCHA image
+    captcha_image.save(DESTINATION_DIRECTORY + '/' + captcha_text + '_' +
+                       str(uuid.uuid4()) + '.png')
 
 
 
@@ -127,7 +129,8 @@ def generate_captcha_image():
                            fill=random.choice(POINT_COLORS))
 
     # save the newly generate CAPTCHA image
-    captcha_image.save(DESTINATION_DIRECTORY + '/' + captcha_string + '_image.png')
+    captcha_image.save(DESTINATION_DIRECTORY + '/' + str(captcha_string) + '_' +
+                       str(uuid.uuid4()) + '.png')
 
 
 
