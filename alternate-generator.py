@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import captcha
+import uuid
 from captcha.image import ImageCaptcha
 
 #FONTS =['/usr/share/fonts/TTF/System San Francisco Display Regular.ttf',
@@ -20,4 +21,5 @@ for number in range(0, 10000):
     image = ImageCaptcha(width = 120, height = 100) 
 
     data = image.generate(captcha_text)  
-    image.write(captcha_text, DESTINATION + captcha_text + '_image.png')
+    image.write(captcha_text, DESTINATION + captcha_text + '_' +
+            str(uuid.uuid4()) + '.png')
