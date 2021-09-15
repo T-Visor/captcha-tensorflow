@@ -1,0 +1,16 @@
+https://openaccess.thecvf.com/content_CVPR_2020/papers/Xu_What_Machines_See_Is_Not_What_They_Get_Fooling_Scene_CVPR_2020_paper.pd://openaccess.thecvf.com/content_CVPR_2020/papers/Xu_What_Machines_See_Is_Not_What_They_Get_Fooling_Scene_CVPR_2020_paper.pdf
+
+- Creating adversarial examples is seen as an optimization problem
+- A combination of untargeted and targeted attacks
+- Researchers noticed that many adversarial example attacks are on simpler
+  classifier-based models rather than sequential
+- Used stochastic gradient descent algorithm to update perturbation vector
+  iteratively
+- Targeted 5 total scene text recognition models: CRNN, Rosetta, STAR-NET which
+  are CTC-based. RARE and TRBA which are attention-based
+- The above models use some variation of VGG or ResNet neural networks for
+  visual feature extraction
+- In addition, some variation of LSTM is used for sequence modeling
+- According to this paper, most STR models use synthetic data for training
+- According to this paper, most STR models originally adopted the Adam
+  optimizer with a learning rate of .005
