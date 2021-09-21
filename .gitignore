@@ -9,6 +9,8 @@ log/*
 datasets/*
 my_model/*
 
+model_checkpoint/*
+
 # self defined
 db.sqlite3
 media/*

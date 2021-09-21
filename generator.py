@@ -19,8 +19,12 @@ RED = (189, 41, 0)
 DARK_BLUE = (0, 3, 82)
 POINT_COLORS = ['black', 'red', 'blue', 'green', FOREST_GREEN, SEA_BLUE, DARK_BLUE]
 LINE_POINT_COLORS = [FOREST_GREEN, SEA_BLUE, DARK_INDIGO, PINK, LIGHT_GREEN, ORANGE, RED]
+
+IMAGE_WIDTH = 224
+IMAGE_LENGTH = 224
+
 FONT_NAME = ''
-DESTINATION_DIRECTORY = 'datasets/multi-fonts-many/'
+DESTINATION_DIRECTORY = 'datasets/vgg-16-data/'
 
 FONTS = [r'/usr/share/fonts/TTF/DejaVuSans.ttf',
          r'/usr/share/fonts/TTF/DejaVuSerif.ttf',
@@ -31,7 +35,8 @@ FONTS = [r'/usr/share/fonts/TTF/DejaVuSans.ttf',
         ]
 
 # Get two random locations on the CAPTCHA image
-get_image_location = lambda : (random.randrange(0, 80), random.randrange(0, 60))
+get_image_location = lambda : (random.randrange(0, IMAGE_WIDTH),
+                               random.randrange(0, IMAGE_LENGTH))
 
 # Get a random font
 get_font = lambda : (random.choice(FONTS)) 
@@ -81,7 +86,7 @@ def parse_commandline_argument():
 
 def generate_numeric_captcha_image(number):
     # create a colored image with white background
-    captcha_image = Image.new('RGB', (80, 60), color="white")
+    captcha_image = Image.new('RGB', (IMAGE_WIDTH, IMAGE_LENGTH), color="white")
     illustrator = ImageDraw.Draw(captcha_image)
 
     # generate the colored number
@@ -110,7 +115,7 @@ def generate_numeric_captcha_image(number):
 def generate_captcha_image():
     
     # create a colored image with white background
-    captcha_image = Image.new('RGB', (80, 60), color="white")
+    captcha_image = Image.new('RGB', (IMAGE_WIDTH, IMAGE_LENGTH), color="white")
     illustrator = ImageDraw.Draw(captcha_image)
 
     # generate a randomly colored string
@@ -153,14 +158,16 @@ def generate_random_string(captcha_length: int, character_set: str) -> str:
 
 
 def get_colored_text(illustrator, captcha_string):
-    digit_position = 20
+    x_position = IMAGE_WIDTH / 6
+    y_position = IMAGE_LENGTH / 3
+    font_size = int(IMAGE_LENGTH * 0.3)
 
     for i in range(len(captcha_string)):
         text_color = random.choice(POINT_COLORS)
         character = captcha_string[i]
-        font = ImageFont.truetype(get_font(), 18)
-        illustrator.text((digit_position,20), character, fill=text_color, font=font)
-        digit_position = digit_position + 10
+        font = ImageFont.truetype(get_font(), font_size)
+        illustrator.text((x_position, y_position), character, fill=text_color, font=font)
+        x_position = x_position + (IMAGE_WIDTH / 5)
 
 
 
