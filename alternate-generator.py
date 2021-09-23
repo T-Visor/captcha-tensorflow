@@ -22,4 +22,4 @@ for number in range(0, 10000):
 
     data = image.generate(captcha_text)  
     image.write(captcha_text, DESTINATION + captcha_text + '_' +
-            str(uuid.uuid4()) + '.png')
+                str(uuid.uuid4()) + '.png')
