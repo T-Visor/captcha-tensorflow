@@ -22,12 +22,12 @@ LINE_POINT_COLORS = [FOREST_GREEN, SEA_BLUE, DARK_INDIGO, PINK, LIGHT_GREEN, ORA
 FONT_NAME = ''
 DESTINATION_DIRECTORY = 'datasets/multi-fonts-many/'
 
-FONTS = [r'/usr/share/fonts/TTF/DejaVuSans.ttf',
-         r'/usr/share/fonts/TTF/DejaVuSerif.ttf',
-         r'/usr/share/fonts/TTF/OpenSans-Bold.ttf',
-         r'/usr/share/fonts/TTF/OpenSans-Light.ttf',
-         r'/usr/share/fonts/TTF/System San Francisco Display Regular.ttf',
-         r'/usr/share/fonts/TTF/MesloLGS-NF-Italic.ttf'
+FONTS = [r'fonts/TTF/DejaVuSans.ttf',
+         r'fonts/DejaVuSerif.ttf',
+         r'fonts/OpenSans-Bold.ttf',
+         r'fonts/OpenSans-Light.ttf',
+         r'fonts/System San Francisco Display Regular.ttf',
+         r'fonts/MesloLGS-NF-Italic.ttf'
         ]
 
 # Get two random locations on the CAPTCHA image
