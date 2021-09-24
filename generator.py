@@ -26,7 +26,7 @@ IMAGE_LENGTH = 100
 FONT_NAME = ''
 DESTINATION_DIRECTORY = 'datasets/vgg-16-data/'
 
-FONTS = [r'fonts/TTF/DejaVuSans.ttf',
+FONTS = [r'fonts/DejaVuSans.ttf',
          r'fonts/DejaVuSerif.ttf',
          r'fonts/OpenSans-Bold.ttf',
          r'fonts/OpenSans-Light.ttf',
