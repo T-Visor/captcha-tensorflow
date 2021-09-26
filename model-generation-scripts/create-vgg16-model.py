@@ -30,11 +30,13 @@ MODEL_NAME = 'vgg-16'
 
 def main():
 
-    # Create CAPTCHA dataframe, then split it into different subsets.
+    # Load the CAPTCHA dataset.
     data_frame = create_captcha_dataframe(DATA_DIRECTORY)
+
+    # Split CAPTCHA dataset into training and validation sets.
     train_indices, validation_indices = shuffle_and_split_data(data_frame)
 
-    # Display the number of samples in each subset. 
+    # Display the number of samples in each set.
     print('training count: %s, validation count: %s' % (
           len(train_indices), len(validation_indices)))
     
