@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from PIL import Image, ImageDraw, ImageFont
+from tqdm import tqdm, tnrange
 import argparse
 import os
 import random 
@@ -25,8 +26,6 @@ LINE_POINT_COLORS = [FOREST_GREEN, SEA_BLUE, DARK_INDIGO, PINK, LIGHT_GREEN, ORA
 IMAGE_HEIGHT = 100
 IMAGE_WIDTH = 100
 
-DESTINATION_DIRECTORY = 'datasets/test/'
-
 FONTS = [r'fonts/DejaVuSans.ttf',
          r'fonts/DejaVuSerif.ttf',
          r'fonts/OpenSans-Bold.ttf',
@@ -35,13 +34,14 @@ FONTS = [r'fonts/DejaVuSans.ttf',
          r'fonts/MesloLGS-NF-Italic.ttf'
         ]
 
-ITERATIONS = 1
-
-# For now, I recommend to use lengths 1 through 5.
-CAPTCHA_LENGTH = 4
+# Variables which will be set from command-line arguments.
+DESTINATION_DIRECTORY = None
+ITERATIONS = None
+CAPTCHA_LENGTH = None
 
 # '1' represents the most significant digit,
-# append this value with 0's to determine its value.
+# append this value with 0's to determine the total
+# number of unique CAPTCHAs to generate.
 UNIQUE_VALUES = '1' 
 
 #==========================================================================================
@@ -61,6 +61,18 @@ def main():
         Generate the CAPTCHA dataset.
     """
     global UNIQUE_VALUES
+    global CAPTCHA_LENGTH
+    global DESTINATION_DIRECTORY
+
+    # Get the command-line arguments.
+    arguments = parse_command_line_arguments()
+
+    # Assign values retrieved from the command-line.
+    ITERATIONS = int(arguments.iterations[0])
+    CAPTCHA_LENGTH = int(arguments.length[0])
+    DESTINATION_DIRECTORY = 'datasets/' + arguments.destination[0] + '/'
+
+    # Destination directory to store CAPTCHA image dataset.
     os.makedirs(DESTINATION_DIRECTORY, exist_ok=True)
 
     # Append zeroes to get the total number of unique 
@@ -81,26 +93,44 @@ def main():
     print('Saving to: ' + DESTINATION_DIRECTORY)
     print('--------------------------------------')
 
-    # Generate numeric CAPTCHAs.
-    for _ in range(0, ITERATIONS):
-        for i in range (0, UNIQUE_VALUES):
-            generate_numeric_captcha_image(i)
+    # Generate the numeric CAPTCHAs.
+    with tqdm(total=(ITERATIONS * UNIQUE_VALUES)) as progress_bar:
+        for _ in range(0, ITERATIONS):
+            for i in range (0, UNIQUE_VALUES):
+                generate_numeric_captcha_image(i)
+                progress_bar.update(1)
 
 
 
 
-def parse_commandline_argument():
+def parse_command_line_arguments():
     """ 
-        NOTE: NEED TO CHANGE THIS TO SUPPORT NEW PROGRAM BEHAVIOR!!!
-
         Parse the arguments from the command-line.
 
         If no arguments are passed, the help screen will
         be shown and the program will be terminated.
 
     Returns:
-        the parser with the command-line argument
+        the parser with command-line arguments
     """
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('-i', '--iterations', nargs=1, required=True, 
+                        help='The number of times to repeat unique CAPTCHA set generation.')
+
+    parser.add_argument('-l', '--length', nargs=1, required=True, 
+                        help='Number of characters for each CAPTCHA image.')
+
+    parser.add_argument('-d', '--destination', nargs=1, required=True,
+                        help='The name of the destination directory within \
+                              "datasets" to save the CAPTCHA images to')
+
+    # if no arguments were passed, show the help screen
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit()
+
+    return parser.parse_args()
 
 
 
