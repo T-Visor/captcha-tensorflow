@@ -68,8 +68,8 @@ def main():
     arguments = parse_command_line_arguments()
 
     # Assign values retrieved from the command-line.
-    ITERATIONS = int(arguments.iterations[0])
-    CAPTCHA_LENGTH = int(arguments.length[0])
+    ITERATIONS = arguments.iterations[0]
+    CAPTCHA_LENGTH = arguments.length[0]
     DESTINATION_DIRECTORY = 'datasets/' + arguments.destination[0] + '/'
 
     # Destination directory to store CAPTCHA image dataset.
@@ -115,10 +115,10 @@ def parse_command_line_arguments():
     """
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-i', '--iterations', nargs=1, required=True, 
+    parser.add_argument('-i', '--iterations', type=int, nargs=1, required=True, 
                         help='The number of times to repeat unique CAPTCHA set generation.')
 
-    parser.add_argument('-l', '--length', nargs=1, required=True, 
+    parser.add_argument('-l', '--length', type=int, nargs=1, required=True, 
                         help='Number of characters for each CAPTCHA image.')
 
     parser.add_argument('-d', '--destination', nargs=1, required=True,
