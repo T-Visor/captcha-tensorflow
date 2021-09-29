@@ -3,6 +3,8 @@
 .ipynb_checkpoints/*
 notebooks/.ipynb_checkpoints/*
 
+model-info/*
+
 images/*
 log/*
 
