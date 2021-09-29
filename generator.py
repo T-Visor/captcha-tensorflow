@@ -118,7 +118,7 @@ def parse_command_line_arguments():
     parser.add_argument('-i', '--iterations', type=int, nargs=1, required=True, 
                         help='The number of times to repeat unique CAPTCHA set generation.')
 
-    parser.add_argument('-l', '--length', type=int, nargs=1, required=True, 
+    parser.add_argument('-l', '--length', type=int, choices=range(1, 6), nargs=1, required=True, 
                         help='Number of characters for each CAPTCHA image.')
 
     parser.add_argument('-d', '--destination', nargs=1, required=True,
