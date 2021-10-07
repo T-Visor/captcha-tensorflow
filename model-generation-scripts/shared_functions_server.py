@@ -73,7 +73,7 @@ def create_captcha_dataframe(captcha_images_directory):
 
 def shuffle_and_split_data(data_frame):
     """
-        Shuffle and split the data into 3 sets: training, validation, and testing.
+        Shuffle and split the data into 2 sets: training and validation.
     
     Args:
         data_frame (pandas.DataFrame): the data to shuffle and split
@@ -94,8 +94,8 @@ def shuffle_and_split_data(data_frame):
 
 
 
-def create_untrained_model(image_height=100, image_width=100, image_channels=3, 
-                           character_length=4, categories=10):
+def create_CAPTCHA_NET_model(image_height=100, image_width=100, image_channels=3, 
+                             character_length=4, categories=10):
 
     input_layer = tensorflow.keras.Input(shape=(image_height, image_width, image_channels))
 
@@ -123,8 +123,8 @@ def create_untrained_model(image_height=100, image_width=100, image_channels=3,
 
 
 
-def create_untrained_alternative_model(image_height=100, image_width=100, image_channels=3, 
-                                       character_length=4, categories=10):
+def create_improved_CAPTCHA_NET_model(image_height=100, image_width=100, image_channels=3, 
+                                      character_length=4, categories=10):
     
     model = Sequential()
 
@@ -153,8 +153,8 @@ def create_untrained_alternative_model(image_height=100, image_width=100, image_
 
 
 
-def create_untrained_vgg16_model(image_height=100, image_width=100, image_channels=3, 
-                                 character_length=4, categories=10):
+def create_VGG16_model(image_height=100, image_width=100, image_channels=3, 
+                       character_length=4, categories=10):
     
     model = Sequential()
     

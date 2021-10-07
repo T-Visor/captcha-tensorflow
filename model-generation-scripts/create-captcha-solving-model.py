@@ -24,6 +24,7 @@ DIMENSIONS = None
 TRAINING_EPOCHS = None
 TRAINING_BATCH_SIZE = None
 VALIDATION_BATCH_SIZE = None
+MODEL_ARCHITECTURE = None
 MODEL_NAME = None
 TRAINING_HISTORY_FILE_NAME = None
 
@@ -34,26 +35,11 @@ def main():
     """
         Create the CAPTCHA-solving model.
     """
-    global DATA_DIRECTORY
-    global DIMENSIONS
-    global TRAINING_EPOCHS
-    global TRAINING_BATCH_SIZE
-    global VALIDATION_BATCH_SIZE
-    global MODEL_NAME
-    global TRAINING_HISTORY_FILE_NAME
-
     # Get the command-line arguments.
     arguments = parse_command_line_arguments()
 
-    # Assign values retrieved from command-line.
-    DATA_DIRECTORY =  os.path.join(os.getcwd() + 
-                                  '/datasets/' + arguments.data_directory[0])
-    DIMENSIONS = arguments.length[0]
-    TRAINING_EPOCHS = arguments.epochs[0]
-    TRAINING_BATCH_SIZE = arguments.batch_size[0]
-    VALIDATION_BATCH_SIZE = arguments.batch_size[0]
-    MODEL_NAME = arguments.model_name[0]
-    TRAINING_HISTORY_FILE_NAME = arguments.training_history_file_name[0]
+    # Assign values retrieved from the command-line.
+    initialize_globals(arguments)
   
     # Load the CAPTCHA dataset.
     data_frame = create_captcha_dataframe(DATA_DIRECTORY)
@@ -65,12 +51,8 @@ def main():
     print('training count: %s, validation count: %s' % (
           len(train_indices), len(validation_indices)))
     
-    # Create the baseline untrained model.
-    model = create_untrained_vgg16_model(IMAGE_HEIGHT, 
-                                         IMAGE_WIDTH, 
-                                         IMAGE_CHANNELS,
-                                         DIMENSIONS, 
-                                         CATEGORIES)
+    # Create the untrained model.
+    model = neural_network_factory()
 
     # Train the model.
     history = train_model(model, 
@@ -107,7 +89,7 @@ def parse_command_line_arguments():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('-d', '--data_directory', nargs=1, required=True, 
-                        help='Name of the directory holding the CAPTCHA dataset.')
+                        help='Name of the sub-directory inside "datasets" holding the CAPTCHA images for training.')
 
     parser.add_argument('-l', '--length', type=int, choices=range(1, 6), nargs=1, required=True, 
                         help='Number of characters for each CAPTCHA image.')
@@ -117,6 +99,10 @@ def parse_command_line_arguments():
 
     parser.add_argument('-b', '--batch_size', type=int, choices=[16, 32, 64], nargs=1, required=True,
                         help='Number of epochs when training the model.')
+
+    parser.add_argument('-a', '--model_architecture', 
+                        choices=['VGG-16', 'CAPTCHA-NET', 'T-NET'], nargs=1, required=True,
+                        help='Type of neural network architecture for the model.')
 
     parser.add_argument('-m', '--model_name', nargs=1, required=True,
                         help='Name of the model file when saving to disk.')
@@ -130,6 +116,67 @@ def parse_command_line_arguments():
         sys.exit()
 
     return parser.parse_args()
+
+
+
+
+def initialize_globals(arguments):
+    """
+        Assign the parsed command-line arguments to the 
+        global variables.
+
+    Args:
+        arguments: the parsed command-line arguments
+    """
+    global DATA_DIRECTORY
+    global DIMENSIONS
+    global TRAINING_EPOCHS
+    global TRAINING_BATCH_SIZE
+    global VALIDATION_BATCH_SIZE
+    global MODEL_NAME
+    global MODEL_ARCHITECTURE
+    global TRAINING_HISTORY_FILE_NAME
+
+    DATA_DIRECTORY =  os.path.join(os.getcwd() + 
+                                  '/datasets/' + arguments.data_directory[0])
+    DIMENSIONS = arguments.length[0]
+    TRAINING_EPOCHS = arguments.epochs[0]
+    TRAINING_BATCH_SIZE = arguments.batch_size[0]
+    VALIDATION_BATCH_SIZE = arguments.batch_size[0]
+    MODEL_NAME = arguments.model_name[0]
+    MODEL_ARCHITECTURE = arguments.model_architecture[0]
+    TRAINING_HISTORY_FILE_NAME = arguments.training_history_file_name[0]
+
+
+
+
+def neural_network_factory():
+    """
+    Returns:
+        the appropriate neural network architecture
+        based on the value specified by the command-line argument
+    """
+    model = None
+
+    if MODEL_ARCHITECTURE == 'VGG-16':
+        model = create_VGG16_model(IMAGE_HEIGHT, 
+                                   IMAGE_WIDTH, 
+                                   IMAGE_CHANNELS,
+                                   DIMENSIONS, 
+                                   CATEGORIES)
+    elif MODEL_ARCHITECTURE == 'CAPTCHA-NET':
+        model = create_CAPTCHA_NET_model(IMAGE_HEIGHT, 
+                                         IMAGE_WIDTH, 
+                                         IMAGE_CHANNELS,
+                                         DIMENSIONS, 
+                                         CATEGORIES)
+    elif MODEL_ARCHITECTURE == 'T-NET':  
+        model = create_improved_CAPTCHA_NET_model(IMAGE_HEIGHT, 
+                                                  IMAGE_WIDTH, 
+                                                  IMAGE_CHANNELS,
+                                                  DIMENSIONS, 
+                                                  CATEGORIES)
+    return model
 
 
 
