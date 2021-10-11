@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from captcha.image import ImageCaptcha
+from multicolorcaptcha import *
 from PIL import Image, ImageDraw, ImageFont
 from tqdm import tqdm, tnrange
 import argparse
@@ -35,9 +37,10 @@ FONTS = [r'fonts/DejaVuSans.ttf',
         ]
 
 # Variables which will be set from command-line arguments.
-DESTINATION_DIRECTORY = None
 ITERATIONS = None
 CAPTCHA_LENGTH = None
+CAPTCHA_TYPE = None
+DESTINATION_DIRECTORY = None
 
 # '1' represents the most significant digit,
 # append this value with 0's to determine the total
@@ -62,6 +65,7 @@ def main():
     """
     global UNIQUE_VALUES
     global CAPTCHA_LENGTH
+    global CAPTCHA_TYPE
     global DESTINATION_DIRECTORY
 
     # Get the command-line arguments.
@@ -70,6 +74,7 @@ def main():
     # Assign values retrieved from the command-line.
     ITERATIONS = arguments.iterations[0]
     CAPTCHA_LENGTH = arguments.length[0]
+    CAPTCHA_TYPE = arguments.captcha_type[0]
     DESTINATION_DIRECTORY = 'datasets/' + arguments.destination[0] + '/'
 
     # Destination directory to store CAPTCHA image dataset.
@@ -121,6 +126,10 @@ def parse_command_line_arguments():
     parser.add_argument('-l', '--length', type=int, choices=range(1, 6), nargs=1, required=True, 
                         help='Number of characters for each CAPTCHA image.')
 
+    parser.add_argument('-t', '--captcha_type', nargs=1, choices=('SIMPLE', 'COMPLEX', 'MULTI-COLOR'), 
+                        required=True,
+                        help='Variation of CAPTCHA image to create.')
+
     parser.add_argument('-d', '--destination', nargs=1, required=True,
                         help='The name of the destination directory within \
                               "datasets" to save the CAPTCHA images to')
@@ -137,16 +146,16 @@ def parse_command_line_arguments():
 
 def generate_numeric_captcha_image(number):
     """
-        Create a CAPTCHA image sample by drawing out colored digits, and
-        make obstructions by placing random colored dots and lines throughout.
+        Create a CAPTCHA image variation save it as a PNG file.
+
+        File name format: <number>_<HASH>.png
+
+        File name example: 5012_49e3c79a-0700-440f-a576-18f7b2432f80.png
+        (assuming a CAPTCHA was created with the string '5012')
 
     Args:
-        number (str): series of one or more digits represented as a single string
+        number (str): one or more digits represented as a single string
     """
-    # Create a colored image with white background.
-    captcha_image = Image.new('RGB', (IMAGE_WIDTH, IMAGE_HEIGHT), color="white")
-    illustrator = ImageDraw.Draw(captcha_image)
-
     # Draw the colored number and fill any digit places
     # according to the specified CAPTCHA length.
     #
@@ -154,7 +163,52 @@ def generate_numeric_captcha_image(number):
     #          CAPTCHA length is '4', its new value is '0025'.
     captcha_text = str(number)
     captcha_text = captcha_text.zfill(CAPTCHA_LENGTH)
-    draw_colored_text(illustrator, captcha_text)
+
+    if CAPTCHA_TYPE == 'SIMPLE':
+        captcha_image = make_simple_captcha(captcha_text)
+        captcha_image.save(DESTINATION_DIRECTORY + '/' + captcha_text + '_' +
+                           str(uuid.uuid4()) + '.png')
+    elif CAPTCHA_TYPE == 'COMPLEX':
+        captcha_image = ImageCaptcha(width = IMAGE_WIDTH, height = IMAGE_HEIGHT) 
+        captcha_image.generate(captcha_text)  
+        captcha_image.write(captcha_text, DESTINATION_DIRECTORY + '/' +
+                            captcha_text + '_' + str(uuid.uuid4()) + '.png')
+    elif CAPTCHA_TYPE == 'MULTI-COLOR':
+        generator = CaptchaGenerator(0)
+        generated_captcha = generator.gen_captcha_image(0, captcha_text, True, True)
+        captcha_image = generated_captcha['image']
+        captcha_image.save(DESTINATION_DIRECTORY + '/' + captcha_text + '_' +
+                           str(uuid.uuid4()) + '.png')
+
+
+
+
+def make_simple_captcha(captcha_string):
+    """
+        Draw a simple set of colored characters on a white background 
+        and add some random lines and points.
+        
+    Args:
+        captcha_string: the characters to write on the CAPTCHA image
+
+    Returns:
+        a newly created simple CAPTCHA image
+    """
+    # Create a colored image with white background.
+    captcha_image = Image.new('RGB', (IMAGE_WIDTH, IMAGE_HEIGHT), color="white")
+    illustrator = ImageDraw.Draw(captcha_image)
+
+    x_position = IMAGE_WIDTH / (CAPTCHA_LENGTH + 2)
+    y_position = IMAGE_HEIGHT / 3 # middle height
+    font_size = int(IMAGE_HEIGHT * 0.3)
+
+    # Draw the colored text.
+    for i in range(len(captcha_string)):
+        text_color = random.choice(POINT_COLORS)
+        character = captcha_string[i]
+        font = ImageFont.truetype(get_font(), font_size)
+        illustrator.text((x_position, y_position), character, fill=text_color, font=font)
+        x_position = x_position + (IMAGE_WIDTH / (CAPTCHA_LENGTH + 1))
 
     # Draw some random lines.
     for _ in range(5,random.randrange(6, 10)):
@@ -167,32 +221,7 @@ def generate_numeric_captcha_image(number):
                            get_image_location(), get_image_location(), get_image_location()), 
                            fill=random.choice(POINT_COLORS))
 
-    # Save the newly generate CAPTCHA image with a unique identifier.
-    captcha_image.save(DESTINATION_DIRECTORY + '/' + captcha_text + '_' +
-                       str(uuid.uuid4()) + '.png')
-
-
-
-
-def draw_colored_text(illustrator, captcha_string):
-    """
-        Draw colored characters on the CAPTCHA image using the supplied
-        CAPTCHA string.
-        
-    Args:
-        illustrator: object capable of drawing on the CAPTCHA image
-        captcha_string: the characters to write on the CAPTCHA image
-    """
-    x_position = IMAGE_WIDTH / (CAPTCHA_LENGTH + 2)
-    y_position = IMAGE_HEIGHT / 3 # middle height
-    font_size = int(IMAGE_HEIGHT * 0.3)
-
-    for i in range(len(captcha_string)):
-        text_color = random.choice(POINT_COLORS)
-        character = captcha_string[i]
-        font = ImageFont.truetype(get_font(), font_size)
-        illustrator.text((x_position, y_position), character, fill=text_color, font=font)
-        x_position = x_position + (IMAGE_WIDTH / (CAPTCHA_LENGTH + 1))
+    return captcha_image
 
 
 

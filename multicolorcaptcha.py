@@ -351,7 +351,7 @@ class CaptchaGenerator:
             # Generate a RGB background color for each iteration if multicolor enabled
             if multicolor:
                 image_background = self.gen_rand_color()
-            # Generate a random character, a random character color in contrast to background 
+            # Generate a random character color in contrast to background 
             # and a random position for it
             captcha = self.gen_captcha_char_image(character, self.one_char_image_size, 2, \
                     image_background)
