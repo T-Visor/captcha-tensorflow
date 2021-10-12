@@ -5,8 +5,8 @@ import os
 import pickle
 import sys
 
-# Functions from other notebook file.
-from shared_functions_server import *
+# Functions from other file.
+from model_utils import *
 
 # Move one directory back to the project root.
 os.chdir("..")
@@ -52,7 +52,7 @@ def main():
           len(train_indices), len(validation_indices)))
     
     # Create the untrained model.
-    model = neural_network_factory()
+    model = get_trainable_neural_network()
 
     # Train the model.
     history = train_model(model, 
@@ -150,7 +150,7 @@ def initialize_globals(arguments):
 
 
 
-def neural_network_factory():
+def get_trainable_neural_network():
     """
     Returns:
         the appropriate neural network architecture
@@ -181,4 +181,5 @@ def neural_network_factory():
 
 
 
-main()
+if __name__ == '__main__':
+    main()
