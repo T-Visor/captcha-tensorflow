@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from captcha.image import ImageCaptcha
+from claptcha import Claptcha
 from multicolorcaptcha import *
 from PIL import Image, ImageDraw, ImageFont
 from tqdm import tqdm, tnrange
@@ -126,7 +127,7 @@ def parse_command_line_arguments():
     parser.add_argument('-l', '--length', type=int, choices=range(1, 6), nargs=1, required=True, 
                         help='Number of characters for each CAPTCHA image.')
 
-    parser.add_argument('-t', '--captcha_type', nargs=1, choices=('SIMPLE', 'COMPLEX', 'MULTI-COLOR'), 
+    parser.add_argument('-t', '--captcha_type', nargs=1, choices=('SIMPLE', 'COMPLEX', 'MULTI-COLOR', 'MONOCHROME'), 
                         required=True,
                         help='Variation of CAPTCHA image to create.')
 
@@ -179,6 +180,11 @@ def generate_numeric_captcha_image(number):
         captcha_image = generated_captcha['image']
         captcha_image.save(DESTINATION_DIRECTORY + '/' + captcha_text + '_' +
                            str(uuid.uuid4()) + '.png')
+    elif CAPTCHA_TYPE == 'MONOCHROME':
+        captcha_image = Claptcha(captcha_text, get_font(), (IMAGE_HEIGHT,IMAGE_WIDTH),
+                                 resample=Image.BICUBIC, noise=0.0)
+        captcha_image.write(DESTINATION_DIRECTORY + '/' + captcha_text + '_' +
+                            str(uuid.uuid4()) + '.png')
 
 
 
@@ -226,4 +232,5 @@ def make_simple_captcha(captcha_string):
 
 
 
-main()
+if __name__ == '__main__': 
+    main()
