@@ -1,4 +1,8 @@
-captcha==0.3
-Pillow==7.0.0
+captcha
+claptcha
+tqdm
+matplotlib
+pandas
 tensorflow
+Pillow
 ipynb
