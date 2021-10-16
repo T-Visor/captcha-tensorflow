@@ -31,4 +31,4 @@ Further Modified By: Turhan Kimbrough (2021)
 
 ## Model inference
 - No standardized template has been created for model inference (at least yet)
-- Examples of model inference can be viewed for any notebook with 'evaluation' in its name
+- Examples of Jupyter notebook files with model inference can be found in the 'notebooks' subdirectory. The notebook files contain 'evaluation' in their file names.
