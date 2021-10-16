@@ -18,7 +18,7 @@ Further Modified By: Turhan Kimbrough (2021)
 - Users can specify which CAPTCHA library for generation at run-time, allowing mixed datasets
 - All CAPTCHA images will be saved to a sub-directory within 'datasets' inside the project
 
-![alt text for screen readers](captcha-generator.png "script screenshot")
+![alt text for screen readers](captcha-generator.png?raw=true "script screenshot")
 
 ## Train the Model
 - Run the 'create-captcha-solving-model.py' file and supply it with command-line arguments
@@ -27,7 +27,7 @@ Further Modified By: Turhan Kimbrough (2021)
 - Users can specify the batch size, model architecture (out of a set of choices), and number of training epochs at run-time
 - When the script finishes, the training history will be saved in a serialized format (using 'pickle' library) along with the trained model. Both will be saved in the root of the project folder.
 
-![alt text for screen readers](create-captcha-solving-model.png "script screenshot")
+![alt text for screen readers](create-captcha-solving-model.png?raw=true "script screenshot")
 
 ## Model inference
 - No standardized template has been created for model inference (at least yet)
