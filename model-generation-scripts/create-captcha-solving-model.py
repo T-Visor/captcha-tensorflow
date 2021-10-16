@@ -98,7 +98,7 @@ def parse_command_line_arguments():
                         help='Number of epochs when training the model.')
 
     parser.add_argument('-b', '--batch_size', type=int, choices=[16, 32, 64], nargs=1, required=True,
-                        help='Number of epochs when training the model.')
+                        help='Number of samples for the model at each iteration of training.')
 
     parser.add_argument('-a', '--model_architecture', 
                         choices=['VGG-16', 'CAPTCHA-NET', 'T-NET'], nargs=1, required=True,
