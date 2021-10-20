@@ -16,6 +16,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import *
 from tensorflow.keras.utils import to_categorical
+from keras.applications.densenet import DenseNet121
 
 session = tensorflow.compat.v1.Session()
 
@@ -123,31 +124,48 @@ def create_CAPTCHA_NET_model(image_height=100, image_width=100, image_channels=3
 
 
 
-def create_improved_CAPTCHA_NET_model(image_height=100, image_width=100, image_channels=3, 
-                                      character_length=4, categories=10):
-    
-    model = Sequential()
+def create_improved_CAPTCHA_NET_model(image_height=100, 
+                                      image_width=100, 
+                                      image_channels=1, 
+                                      character_length=4, 
+                                      categories=10):
+    """
+        Model creation function modified for new algorithm.
+    """
+    inputs = []
+    outputs = []
+    flattened_outputs = []
+    dense_outputs = []
 
-    model.add(Input(shape=(image_height, image_width, image_channels)))
-    
-    model.add(Conv2D(filters=16, kernel_size=(3,3),padding='same', activation='relu'))
-    model.add(MaxPool2D(pool_size=(2,2),strides=(2,2)))
+    # Multiple inputs
+    for i in range(character_length):
+        inputs.append(Input(shape=(image_height, image_width, image_channels)))
 
-    model.add(Conv2D(filters=32, kernel_size=(3,3), padding='same', activation='relu'))
-    model.add(MaxPool2D(pool_size=(2,2),strides=(2,2)))
+    # CNN output
+    cnn = DenseNet121(include_top=False)
 
-    model.add(Flatten())
+    for i in range(character_length):
+        outputs.append(cnn(inputs[i]))
+
+    # Flattening the output for the dense layer
+    for i in range(character_length):
+        flattened_outputs.append(Flatten()(outputs[i]))
+
+    # Getting the dense output
+    dense = Dense(1, activation='softmax')
+
+    for i in range(character_length):
+        dense_outputs.append(dense(flattened_outputs[i]))
+
+    # Concatenating the final output
+    out = Concatenate(axis=-1)(dense_outputs)
+
+    # Creating the model
+    model = Model(inputs, outputs=out)
     
-    model.add(Dense(units=1024,activation='relu'))
-    model.add(Dropout(0.5))
-    
-    model.add(Dense(character_length * categories, activation='softmax'))
-    model.add(Reshape((character_length, categories)))
-    
-    model.compile(optimizer='adam', 
-                  loss='categorical_crossentropy',
-                  metrics= ['accuracy'])
-    
+    optimizer = RMSprop(lr=1e-4)
+    model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
+
     return model
 
 
@@ -199,6 +217,59 @@ def create_VGG16_model(image_height=100, image_width=100, image_channels=3,
     model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
 
     return model
+
+
+
+
+def get_alternate_captcha_generator(data_frame, indices, for_training, batch_size=16, image_height=100, image_width=100,
+                                    categories=10):
+    """    
+    Args:
+        data_frame (pandas.DataFrame): contains the file paths to the CAPTCHA images and their labels
+        
+        indices (int): specifies training indices, testing indices, or validation indices of the DataFrame
+        
+        for_training (bool): 'True' for training or validation set, 'False' to specify a test set 
+        
+        batch_size (int): number of data instances to return when iterated upon
+        
+        image_height (int): height in pixels to resize the CAPTCHA image to
+        
+        image_width (int): width in pixels to resize the CAPTCHA image to
+        
+        categories (int): number of possible values for each position in the CAPTCHA image
+    
+    Returns:
+        a generator object for producing CAPTCHA images along with their labels
+        
+    Yields:
+        a pair of lists -> (CAPTCHA images, labels)
+    """
+    images, labels = [], []
+    
+    while True:
+        for i in indices:
+            captcha = data_frame.iloc[i]
+            file, label = captcha['file'], captcha['label']
+            
+            captcha_image = Image.open(file)
+            captcha_image = captcha_image.convert('L')
+            captcha_image = captcha_image.resize((image_height, image_width))
+            captcha_image = numpy.array(captcha_image) / 255.0
+
+            # Attach a single character label to each
+            # CAPTCHA image copy
+            for j in label:
+                images.append(numpy.array(captcha_image))
+                labels.append(numpy.array(to_categorical(int(j), categories)))
+            
+            if len(images) >= (batch_size * categories):        
+                yield numpy.array(images), numpy.array(labels)  # return the current batch
+                images, labels = [], []                         # make both lists empty for the next batch
+                
+        if not for_training:
+            break
+
 
 
 
@@ -281,6 +352,43 @@ def train_model(model, data_frame, train_indices, validation_indices,
                         epochs=training_epochs,
                         callbacks=callbacks,
                         validation_data=validation_set_generator,
+                        validation_steps=len(validation_indices)//validation_batch_size)
+    
+    return history
+
+
+
+
+# TODO: add parameters to satisfy what is required for 'get_captcha_generator' function
+def train_model_alternative(model, data_frame, train_indices, validation_indices, 
+                            training_batch_size, validation_batch_size, training_epochs,
+                            image_height, image_width, categories):
+    
+    training_set_generator = get_alternate_captcha_generator(data_frame, 
+                                                   train_indices,
+                                                   for_training=True, 
+                                                   batch_size=training_batch_size,
+                                                   image_height=image_height,
+                                                   image_width=image_width,
+                                                   categories=categories)
+    
+    validation_set_generator = get_alternate_captcha_generator(data_frame, 
+                                                     validation_indices,
+                                                     for_training=True, 
+                                                     batch_size=validation_batch_size,
+                                                     image_height=image_height,
+                                                     image_width=image_width,
+                                                     categories=categories)
+
+    callbacks = [
+        ModelCheckpoint("./model_checkpoint", monitor='val_loss')
+    ]
+
+    history = model.fit(training_set_generator,
+                        steps_per_epoch=len(train_indices)//training_batch_size,
+                        epochs=training_epochs,
+                        callbacks=callbacks,
+                        validation_data=tuple(validation_set_generator),
                         validation_steps=len(validation_indices)//validation_batch_size)
     
     return history
