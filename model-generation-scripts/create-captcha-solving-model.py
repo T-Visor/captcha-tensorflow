@@ -54,6 +54,8 @@ def main():
     # Create the untrained model.
     model = get_trainable_neural_network()
 
+    model.summary()
+
     # Train the model.
     history = train_model_alternative(model, 
                                       data_frame, 

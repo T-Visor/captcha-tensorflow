@@ -132,40 +132,58 @@ def create_improved_CAPTCHA_NET_model(image_height=100,
     """
         Model creation function modified for new algorithm.
     """
-    inputs = []
-    outputs = []
-    flattened_outputs = []
-    dense_outputs = []
+    # define two sets of inputs
+    inputA = Input(shape=(image_height, image_width, image_channels))
+    inputB = Input(shape=(image_height, image_width, image_channels))
 
-    # Multiple inputs
-    for i in range(character_length):
-        inputs.append(Input(shape=(image_height, image_width, image_channels)))
+    # the first branch operates on the first input
+    #x = Dense(8, activation="relu")(inputA)
+    #x = Dense(4, activation="relu")(x)
+    #x = Model(inputs=inputA, outputs=x)
+    x = layers.Conv2D(32, 3, activation='relu')(inputA)
+    x = layers.MaxPooling2D((2, 2))(x)
+    x = layers.Conv2D(64, 3, activation='relu')(x)
+    x = layers.MaxPooling2D((2, 2))(x)
+    x = layers.Conv2D(64, 3, activation='relu')(x)
+    x = layers.MaxPooling2D((2, 2))(x)
+    x = Model(inputs=inputA, outputs=x)
 
-    # CNN output
-    cnn = DenseNet121(include_top=False)
 
-    for i in range(character_length):
-        outputs.append(cnn(inputs[i]))
+    # the second branch opreates on the second input
+    #y = Dense(64, activation="relu")(inputB)
+    #y = Dense(32, activation="relu")(y)
+    #y = Dense(4, activation="relu")(y)
+    #y = Model(inputs=inputB, outputs=y)
+    y = layers.Conv2D(32, 3, activation='relu')(inputB)
+    y = layers.MaxPooling2D((2, 2))(y)
+    y = layers.Conv2D(64, 3, activation='relu')(y)
+    y = layers.MaxPooling2D((2, 2))(y)
+    y = layers.Conv2D(64, 3, activation='relu')(y)
+    y = layers.MaxPooling2D((2, 2))(y)
+    y = Model(inputs=inputB, outputs=y)
 
-    # Flattening the output for the dense layer
-    for i in range(character_length):
-        flattened_outputs.append(Flatten()(outputs[i]))
 
-    # Getting the dense output
-    dense = Dense(1, activation='softmax')
 
-    for i in range(character_length):
-        dense_outputs.append(dense(flattened_outputs[i]))
+    # combine the output of the two branches
+    combined = concatenate([x.output, y.output])
 
-    # Concatenating the final output
-    out = Concatenate(axis=-1)(dense_outputs)
+    # apply a FC layer and then a regression prediction on the
+    # combined outputs
+    #z = Dense(2, activation="relu")(combined)
+    #z = Dense(1, activation="linear")(z)
+    z = layers.Flatten()(combined)
+    z = layers.Dense(1024, activation='relu')(z)
+    z = layers.Dense(character_length * categories, activation='softmax')(z)
+    z = layers.Reshape((character_length, categories))(z)
 
-    # Creating the model
-    model = Model(inputs, outputs=out)
+
+    # our model will accept the inputs of the two branches and
+    # then output a single value
+    model = Model(inputs=[x.input, y.input], outputs=z)
+    model.compile(optimizer='adam', 
+                  loss='categorical_crossentropy',
+                  metrics= ['accuracy'])
     
-    optimizer = RMSprop(lr=1e-4)
-    model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
-
     return model
 
 
@@ -264,7 +282,7 @@ def get_alternate_captcha_generator(data_frame, indices, for_training, batch_siz
             labels.append(numpy.array([numpy.array(to_categorical(int(i), categories)) for i in label]))
             
             if len(images) >= (batch_size):        
-                yield numpy.array(images), numpy.array(labels)  # return the current batch
+                yield [numpy.array(images), numpy.array(images)], numpy.array(labels)  # return the current batch
                 images, labels = [], []                         # make both lists empty for the next batch
                 
         if not for_training:
