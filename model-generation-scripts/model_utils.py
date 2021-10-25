@@ -256,14 +256,14 @@ def get_alternate_captcha_generator(data_frame, indices, for_training, batch_siz
             captcha_image = captcha_image.convert('L')
             captcha_image = captcha_image.resize((image_height, image_width))
             captcha_image = numpy.array(captcha_image) / 255.0
-
+            captcha_image = captcha_image.reshape(* captcha_image.shape, 1)
+            
             # Attach a single character label to each
             # CAPTCHA image copy
-            for j in label:
-                images.append(numpy.array(captcha_image))
-                labels.append(numpy.array(to_categorical(int(j), categories)))
+            images.append(numpy.array(captcha_image))
+            labels.append(numpy.array([numpy.array(to_categorical(int(i), categories)) for i in label]))
             
-            if len(images) >= (batch_size * categories):        
+            if len(images) >= (batch_size):        
                 yield numpy.array(images), numpy.array(labels)  # return the current batch
                 images, labels = [], []                         # make both lists empty for the next batch
                 
@@ -388,7 +388,7 @@ def train_model_alternative(model, data_frame, train_indices, validation_indices
                         steps_per_epoch=len(train_indices)//training_batch_size,
                         epochs=training_epochs,
                         callbacks=callbacks,
-                        validation_data=tuple(validation_set_generator),
+                        validation_data=validation_set_generator,
                         validation_steps=len(validation_indices)//validation_batch_size)
     
     return history
