@@ -132,50 +132,22 @@ def create_improved_CAPTCHA_NET_model(image_height=100,
     """
         Model creation function modified for new algorithm.
     """
-    # define two sets of inputs
-    inputA = Input(shape=(image_height, image_width, image_channels))
-    inputB = Input(shape=(image_height, image_width, image_channels))
-
-    # the first branch operates on the first input
-    #x = Dense(8, activation="relu")(inputA)
-    #x = Dense(4, activation="relu")(x)
-    #x = Model(inputs=inputA, outputs=x)
-    x = layers.Conv2D(32, 3, activation='relu')(inputA)
-    x = layers.MaxPooling2D((2, 2))(x)
-    x = layers.Conv2D(64, 3, activation='relu')(x)
-    x = layers.MaxPooling2D((2, 2))(x)
-    x = layers.Conv2D(64, 3, activation='relu')(x)
-    x = layers.MaxPooling2D((2, 2))(x)
-    x = Model(inputs=inputA, outputs=x)
+    input_shape = Input(shape=(image_height, image_width, image_channels))
+    input_shape1 = Input(shape=(image_height, image_width, image_channels))
 
 
-    # the second branch opreates on the second input
-    #y = Dense(64, activation="relu")(inputB)
-    #y = Dense(32, activation="relu")(y)
-    #y = Dense(4, activation="relu")(y)
-    #y = Model(inputs=inputB, outputs=y)
-    y = layers.Conv2D(32, 3, activation='relu')(inputB)
-    y = layers.MaxPooling2D((2, 2))(y)
-    y = layers.Conv2D(64, 3, activation='relu')(y)
-    y = layers.MaxPooling2D((2, 2))(y)
-    y = layers.Conv2D(64, 3, activation='relu')(y)
-    y = layers.MaxPooling2D((2, 2))(y)
-    y = Model(inputs=inputB, outputs=y)
-
-
+    x = _create_initial_convolutional_layers(input_shape)
+    y = _create_initial_convolutional_layers(input_shape1)
 
     # combine the output of the two branches
     combined = concatenate([x.output, y.output])
 
     # apply a FC layer and then a regression prediction on the
     # combined outputs
-    #z = Dense(2, activation="relu")(combined)
-    #z = Dense(1, activation="linear")(z)
     z = layers.Flatten()(combined)
     z = layers.Dense(1024, activation='relu')(z)
     z = layers.Dense(character_length * categories, activation='softmax')(z)
     z = layers.Reshape((character_length, categories))(z)
-
 
     # our model will accept the inputs of the two branches and
     # then output a single value
@@ -185,6 +157,18 @@ def create_improved_CAPTCHA_NET_model(image_height=100,
                   metrics= ['accuracy'])
     
     return model
+
+
+
+
+def _create_initial_convolutional_layers(input_shape):
+    x = layers.Conv2D(16, 3, activation='relu')(input_shape)
+    x = layers.MaxPooling2D((2, 2))(x)
+    x = layers.Conv2D(32, 3, activation='relu')(x)
+    x = layers.MaxPooling2D((2, 2))(x)
+    x = Model(inputs=input_shape, outputs=x)
+
+    return x
 
 
 
