@@ -132,26 +132,27 @@ def create_improved_CAPTCHA_NET_model(image_height=100,
     """
         Model creation function modified for new algorithm.
     """
-    input_shape = Input(shape=(image_height, image_width, image_channels))
-    input_shape1 = Input(shape=(image_height, image_width, image_channels))
 
+    model = Sequential()
 
-    x = _create_initial_convolutional_layers(input_shape)
-    y = _create_initial_convolutional_layers(input_shape1)
+    model.add(Input(shape=(character_length, image_height, image_width, image_channels)))
+    
+    model.add(Conv3D(filters=16, kernel_size=(3,3,3), padding='same', activation='relu'))
+    model.add(MaxPooling3D(pool_size=(2,2,2), padding='same'))
+    model.add(BatchNormalization(center=True, scale=True))
 
-    # combine the output of the two branches
-    combined = concatenate([x.output, y.output])
+    model.add(Conv3D(filters=32, kernel_size=(3,3,3), padding='same', activation='relu'))
+    model.add(MaxPooling3D(pool_size=(2,2,2), padding='same'))
+    model.add(BatchNormalization(center=True, scale=True))
 
-    # apply a FC layer and then a regression prediction on the
-    # combined outputs
-    z = layers.Flatten()(combined)
-    z = layers.Dense(1024, activation='relu')(z)
-    z = layers.Dense(character_length * categories, activation='softmax')(z)
-    z = layers.Reshape((character_length, categories))(z)
-
-    # our model will accept the inputs of the two branches and
-    # then output a single value
-    model = Model(inputs=[x.input, y.input], outputs=z)
+    model.add(Flatten())
+    
+    model.add(Dense(units=1024,activation='relu'))
+    model.add(Dropout(0.5))
+    
+    model.add(Dense(character_length * categories, activation='softmax'))
+    model.add(Reshape((character_length, categories)))
+    
     model.compile(optimizer='adam', 
                   loss='categorical_crossentropy',
                   metrics= ['accuracy'])
@@ -248,6 +249,7 @@ def get_alternate_captcha_generator(data_frame, indices, for_training, batch_siz
         a pair of lists -> (CAPTCHA images, labels)
     """
     images, labels = [], []
+    temp = []
     
     while True:
         for i in indices:
@@ -260,14 +262,20 @@ def get_alternate_captcha_generator(data_frame, indices, for_training, batch_siz
             captcha_image = numpy.array(captcha_image) / 255.0
             captcha_image = captcha_image.reshape(* captcha_image.shape, 1)
             
-            # Attach a single character label to each
-            # CAPTCHA image copy
-            images.append(numpy.array(captcha_image))
+            # Make 'n' CAPTCHA copies equal to the 
+            # number of characters in the CAPTCHA image.
+            for i in label:
+                temp.append(numpy.array(captcha_image))
+
+            temp = numpy.array(temp, dtype=object).astype('float32')
+            images.append(temp)
+            temp = []
             labels.append(numpy.array([numpy.array(to_categorical(int(i), categories)) for i in label]))
             
             if len(images) >= (batch_size):        
-                yield [numpy.array(images), numpy.array(images)], numpy.array(labels)  # return the current batch
-                images, labels = [], []                         # make both lists empty for the next batch
+                yield numpy.array(images), numpy.array(labels)  # return the current batch
+                images, labels = [], []                          # make both lists empty for the next batch
+                temp = []
                 
         if not for_training:
             break
