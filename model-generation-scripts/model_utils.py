@@ -256,8 +256,7 @@ def get_alternate_captcha_generator(data_frame, indices, for_training, batch_siz
             captcha = data_frame.iloc[i]
             file, label = captcha['file'], captcha['label']
             
-            captcha_image = Image.open(file)
-            captcha_image = captcha_image.convert('L')
+            captcha_image = Image.open(file).convert('L')
             captcha_image = captcha_image.resize((image_height, image_width))
             captcha_image = numpy.array(captcha_image) / 255.0
             captcha_image = captcha_image.reshape(* captcha_image.shape, 1)

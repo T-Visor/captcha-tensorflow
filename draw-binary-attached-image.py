@@ -3,6 +3,7 @@ from PIL import Image, ImageDraw
 
 # importing image object from PIL
 import math
+import cv2
 from PIL import Image, ImageDraw
   
 w, h = 100, 20
@@ -28,3 +29,11 @@ for i in range(character_length):
     left_side = right_side / character_length
     right_side += w
 
+img1 = Image.open('image0.png').convert('L')
+img2 = Image.open('image1.png').convert('L')
+img3 = Image.new('L', (100, 40), 'white')
+
+img3.paste(img1, (0, 0))
+img3.paste(img2, (0, 20))
+
+img3.save('combined_image.png')
