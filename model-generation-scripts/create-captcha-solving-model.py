@@ -44,17 +44,18 @@ def main():
     # Load the CAPTCHA dataset.
     data_frame = create_captcha_dataframe(DATA_DIRECTORY)
 
+    # Create the trainable model and display its architecture configuration.
+    model = get_trainable_neural_network()
+    model.summary()
+
     # Split CAPTCHA dataset into training and validation sets.
     train_indices, validation_indices = shuffle_and_split_data(data_frame)
 
     # Display the number of samples in each set.
+    print('=================================================================')
     print('training count: %s, validation count: %s' % (
           len(train_indices), len(validation_indices)))
-    
-    # Create the untrained model.
-    model = get_trainable_neural_network()
-
-    model.summary()
+    print('=================================================================')
 
     # Train the model.
     history = train_model_alternative(model, 
