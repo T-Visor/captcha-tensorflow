@@ -8,7 +8,7 @@ import os
 import pandas
 import tensorflow
 
-from PIL import Image
+from PIL import Image, ImageDraw
 from tensorflow.keras import datasets, layers, models
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.layers import *
@@ -135,23 +135,20 @@ def create_improved_CAPTCHA_NET_model(image_height=100,
 
     model = Sequential()
 
-    model.add(Input(shape=(character_length, image_height, image_width, image_channels)))
+    model.add(Input(shape=((image_height + 10), image_width, image_channels)))
     
-    model.add(Conv3D(filters=16, kernel_size=(3,3,3), padding='same', activation='relu'))
-    model.add(MaxPooling3D(pool_size=(2,2,2), padding='same'))
-    model.add(BatchNormalization(center=True, scale=True))
+    model.add(Conv2D(filters=16, kernel_size=(3,3), padding='same', activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2,2), padding='same'))
 
-    model.add(Conv3D(filters=32, kernel_size=(3,3,3), padding='same', activation='relu'))
-    model.add(MaxPooling3D(pool_size=(2,2,2), padding='same'))
-    model.add(BatchNormalization(center=True, scale=True))
+    model.add(Conv2D(filters=32, kernel_size=(3,3), padding='same', activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2,2), padding='same'))
 
     model.add(Flatten())
     
     model.add(Dense(units=1024,activation='relu'))
     model.add(Dropout(0.5))
     
-    model.add(Dense(character_length * categories, activation='softmax'))
-    model.add(Reshape((character_length, categories)))
+    model.add(Dense(categories, activation='softmax'))
     
     model.compile(optimizer='adam', 
                   loss='categorical_crossentropy',
@@ -249,35 +246,77 @@ def get_alternate_captcha_generator(data_frame, indices, for_training, batch_siz
         a pair of lists -> (CAPTCHA images, labels)
     """
     images, labels = [], []
-    temp = []
     
     while True:
         for i in indices:
             captcha = data_frame.iloc[i]
             file, label = captcha['file'], captcha['label']
             
+            # Open the CAPTCHA image as black/white.
             captcha_image = Image.open(file).convert('L')
             captcha_image = captcha_image.resize((image_height, image_width))
-            captcha_image = numpy.array(captcha_image) / 255.0
-            captcha_image = captcha_image.reshape(* captcha_image.shape, 1)
-            
-            # Make 'n' CAPTCHA copies equal to the 
-            # number of characters in the CAPTCHA image.
-            for i in label:
-                temp.append(numpy.array(captcha_image))
+                        
+            metadata_images = _create_metadata_images(image_height, image_width, len(label))
 
-            temp = numpy.array(temp, dtype=object).astype('float32')
-            images.append(temp)
-            temp = []
-            labels.append(numpy.array([numpy.array(to_categorical(int(i), categories)) for i in label]))
-            
-            if len(images) >= (batch_size):        
+            for j in range(len(label)):
+                # Create a new image which will combine the CAPTCHA image and metadata image.
+                combined_image = Image.new('L', (image_width, (image_height + 10)), 'white')
+
+                # Paste the CAPTCHA image first.
+                combined_image.paste(captcha_image, (0, 0))
+
+                # Paste the metadata image underneath the CAPTCHA image.
+                combined_image.paste(metadata_images[j], (0, image_height))
+ 
+                # Normalize the image and add it to the current batch.
+                combined_image = numpy.array(combined_image) / 255.0
+                combined_image = combined_image.reshape(* combined_image.shape, 1)
+
+                print(combined_image.shape)
+                images.append(numpy.array(combined_image))
+
+                # Add a 1-character label for the current image.
+                labels.append(numpy.array(to_categorical(int(label[j]), categories)))
+
+            #print('images:', len(images))
+            #print('labels:', len(labels))
+            #print('batch size:', batch_size)
+
+            if len(images) >= batch_size * len(label): 
                 yield numpy.array(images), numpy.array(labels)  # return the current batch
+                #print(len(images))
                 images, labels = [], []                          # make both lists empty for the next batch
-                temp = []
                 
         if not for_training:
             break
+
+
+
+
+def _create_metadata_images(captcha_height, captcha_width, character_length):
+    meta_width = captcha_width
+    meta_height = 10
+    left_side = 0
+    right_side = captcha_width
+    metadata_images = []
+
+    for i in range(character_length):
+        # Start and end coordinates.
+        rectangle_shape = [(left_side, 0), ((right_side / character_length), meta_height)]
+
+        # Create the base image.
+        metadata_images.append(Image.new('L', (meta_width, meta_height), color='grey'))
+  
+        # Draw the rectangle.
+        rectangle_drawer = ImageDraw.Draw(metadata_images[i])
+        rectangle_drawer.rectangle(rectangle_shape, fill ='#ffffff')
+
+        # Move to a new set of image coordinates for drawing the next metadata image.
+        left_side = (right_side / character_length) 
+        right_side += meta_width
+
+    return metadata_images
+
 
 
 
