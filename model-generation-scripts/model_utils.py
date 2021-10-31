@@ -112,7 +112,7 @@ def create_CAPTCHA_NET_model(image_height=100, image_width=100, image_channels=3
     hidden_layers = layers.Dense(character_length * categories, activation='softmax')(hidden_layers)
     hidden_layers = layers.Reshape((character_length, categories))(hidden_layers)
 
-    model = models.Model(inputs=input_layer, outputs=hidden_layers)
+    model = models.Model(inputs=input_layer, outputs=hidden_layers, name='CAPTCHA-NET')
 
     model.compile(optimizer='adam', 
                   loss='categorical_crossentropy',
@@ -126,7 +126,7 @@ def create_CAPTCHA_NET_model(image_height=100, image_width=100, image_channels=3
 def create_improved_CAPTCHA_NET_model(image_height=100, image_width=100, image_channels=3, 
                                       character_length=4, categories=10):
     
-    model = Sequential()
+    model = Sequential(name='T-NET')
 
     model.add(Input(shape=(image_height, image_width, image_channels)))
     
@@ -156,7 +156,7 @@ def create_improved_CAPTCHA_NET_model(image_height=100, image_width=100, image_c
 def create_VGG16_model(image_height=100, image_width=100, image_channels=3, 
                        character_length=4, categories=10):
     
-    model = Sequential()
+    model = Sequential(name='VGG-16')
     
     model.add(Input(shape=(image_height, image_width, image_channels)))
 
