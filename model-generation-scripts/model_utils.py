@@ -272,7 +272,7 @@ def get_alternate_captcha_generator(data_frame, indices, for_training, batch_siz
                 combined_image = numpy.array(combined_image) / 255.0
                 combined_image = combined_image.reshape(* combined_image.shape, 1)
 
-                print(combined_image.shape)
+                #print(combined_image.shape)
                 images.append(numpy.array(combined_image))
 
                 # Add a 1-character label for the current image.
