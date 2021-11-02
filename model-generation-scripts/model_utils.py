@@ -113,7 +113,7 @@ def create_CAPTCHA_NET_model(image_height=100, image_width=100, image_channels=3
     hidden_layers = layers.Dense(character_length * categories, activation='softmax')(hidden_layers)
     hidden_layers = layers.Reshape((character_length, categories))(hidden_layers)
 
-    model = models.Model(inputs=input_layer, outputs=hidden_layers)
+    model = models.Model(inputs=input_layer, outputs=hidden_layers, name='CAPTCHA-NET')
 
     model.compile(optimizer='adam', 
                   loss='categorical_crossentropy',
@@ -133,7 +133,7 @@ def create_improved_CAPTCHA_NET_model(image_height=100,
         Model creation function modified for new algorithm.
     """
 
-    model = Sequential()
+    model = Sequential(name='T-NET')
 
     model.add(Input(shape=((image_height + 10), image_width, image_channels)))
     
@@ -174,7 +174,7 @@ def _create_initial_convolutional_layers(input_shape):
 def create_VGG16_model(image_height=100, image_width=100, image_channels=3, 
                        character_length=4, categories=10):
     
-    model = Sequential()
+    model = Sequential(name='VGG-16')
     
     model.add(Input(shape=(image_height, image_width, image_channels)))
 
@@ -252,40 +252,50 @@ def get_alternate_captcha_generator(data_frame, indices, for_training, batch_siz
             captcha = data_frame.iloc[i]
             file, label = captcha['file'], captcha['label']
             
-            # Open the CAPTCHA image as black/white.
+            # Open and convert the CAPTCHA image to gray-scale.
             captcha_image = Image.open(file).convert('L')
+        
+            # Resize, in-case the generated CAPTCHA image has different
+            # dimensions than what the neural network expects.
             captcha_image = captcha_image.resize((image_height, image_width))
                         
+            # Get the meta-data images to attach to the CAPTCHA image copies.
             metadata_images = _create_metadata_images(image_height, image_width, len(label))
 
             for j in range(len(label)):
-                # Create a new image which will combine the CAPTCHA image and metadata image.
+                # Create a new gray-scale image which will combine the 
+                # CAPTCHA image and meta-data image.
                 combined_image = Image.new('L', (image_width, (image_height + 10)), 'white')
 
                 # Paste the CAPTCHA image first.
                 combined_image.paste(captcha_image, (0, 0))
 
-                # Paste the metadata image underneath the CAPTCHA image.
+                # Paste the meta-data image underneath the CAPTCHA image.
                 combined_image.paste(metadata_images[j], (0, image_height))
  
-                # Normalize the image and add it to the current batch.
+                # Normalize the pixel values of the resulting image to values
+                # in the range (0, 1) (inclusive).
                 combined_image = numpy.array(combined_image) / 255.0
-                combined_image = combined_image.reshape(* combined_image.shape, 1)
 
-                #print(combined_image.shape)
+                # By default, gray-scale images which are converted to numpy
+                # arrays will only contain two dimensions (height, width). 
+                #
+                # This instruction will manually add a third dimension 
+                # (color channel) since it is required by the neural network.
+                #
+                # The value '1' specifies a single color channel for gray-scale
+                # images.
+                combined_image = combined_image.reshape(*combined_image.shape, 1)
+
+                # Add the resulting image to the current batch.
                 images.append(numpy.array(combined_image))
 
                 # Add a 1-character label for the current image.
                 labels.append(numpy.array(to_categorical(int(label[j]), categories)))
 
-            #print('images:', len(images))
-            #print('labels:', len(labels))
-            #print('batch size:', batch_size)
-
             if len(images) >= batch_size * len(label): 
-                yield numpy.array(images), numpy.array(labels)  # return the current batch
-                #print(len(images))
-                images, labels = [], []                          # make both lists empty for the next batch
+                yield numpy.array(images), numpy.array(labels)   # Return the current batch.
+                images, labels = [], []                          # Make both lists empty for the next batch.
                 
         if not for_training:
             break

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import argparse
 import os
@@ -52,8 +52,8 @@ def main():
     train_indices, validation_indices = shuffle_and_split_data(data_frame)
 
     # Display the number of samples in each set.
-    print('=================================================================')
-    print('training count: %s, validation count: %s' % (
+    print('=================================================================\n')
+    print('training count: %s, validation count: %s\n' % (
           len(train_indices), len(validation_indices)))
     print('=================================================================')
 
