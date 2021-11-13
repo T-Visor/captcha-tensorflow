@@ -100,7 +100,7 @@ def parse_command_line_arguments():
     parser.add_argument('-e', '--epochs', type=int, nargs=1, required=True,
                         help='Number of epochs when training the model.')
 
-    parser.add_argument('-b', '--batch_size', type=int, choices=[16, 32, 64], nargs=1, required=True,
+    parser.add_argument('-b', '--batch_size', type=int, choices=[16, 32, 64, 128, 256, 512, 1024], nargs=1, required=True,
                         help='Number of samples for the model at each iteration of training.')
 
     parser.add_argument('-a', '--model_architecture', 

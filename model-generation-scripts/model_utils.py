@@ -16,6 +16,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import *
 from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.applications.vgg16 import VGG16
 
 session = tensorflow.compat.v1.Session()
 
@@ -155,51 +156,25 @@ def create_improved_CAPTCHA_NET_model(image_height=100, image_width=100, image_c
 
 def create_VGG16_model(image_height=100, image_width=100, image_channels=3, 
                        character_length=4, categories=10):
-    
-    model = Sequential(name='VGG-16')
-    
-    model.add(Input(shape=(image_height, image_width, image_channels)))
 
-    model.add(Conv2D(64, (3, 3), padding='same', activation='relu'))
-    model.add(Conv2D(64, (3, 3), padding='same', activation='relu'))
-    model.add(MaxPooling2D(data_format="channels_last", pool_size=(2, 2)))
+    base_model = VGG16(weights='imagenet', include_top=False,
+                  input_shape=(image_height, image_width, image_channels))
 
-    model.add(Conv2D(128, (3, 3), padding='same', activation='relu'))
-    model.add(Conv2D(128, (3, 3), padding='same', activation='relu'))
-    model.add(MaxPooling2D(data_format="channels_last", pool_size=(2, 2)))
+    flatten_layer = layers.Flatten()
+    dense_layer = Dense(character_length * categories, activation='softmax')
+    prediction_layer = Reshape((character_length, categories))
     
-    model.add(Conv2D(256, (3, 3), padding='same', activation='relu'))
-    model.add(Conv2D(256, (3, 3), padding='same', activation='relu'))
-    model.add(Conv2D(256, (3, 3), padding='same', activation='relu'))
-    model.add(MaxPooling2D(data_format="channels_last", pool_size=(2, 2)))
-    
-    model.add(Conv2D(512, (3, 3), padding='same', activation='relu'))
-    model.add(Conv2D(512, (3, 3), padding='same', activation='relu'))
-    model.add(Conv2D(512, (3, 3), padding='same', activation='relu'))
-    model.add(MaxPooling2D(data_format="channels_last", pool_size=(2, 2)))
+    model = Sequential([
+        base_model,
+        flatten_layer,
+        dense_layer,
+        prediction_layer
+    ])
 
-    model.add(Conv2D(512, (3, 3), padding='same', activation='relu'))
-    model.add(Conv2D(512, (3, 3), padding='same', activation='relu'))
-    model.add(Conv2D(512, (3, 3), padding='same', activation='relu'))
-    #model.add(MaxPooling2D(data_format="channels_last", pool_size=(2, 2)))
-
-    model.add(Flatten())
-    model.add(Dense(256, activation='relu'))
-    model.add(Dropout(0.5))
-    
-    model.add(Dense(256, activation='relu'))
-    model.add(Dropout(0.5))
-
-    model.add(Dense(character_length * categories))
-    model.add(Activation('softmax'))
-    
-    model.add(Reshape((character_length, categories)))
-
-    optimizer = RMSprop(lr=1e-4)
-    model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
     return model
-
+    
 
 
 
