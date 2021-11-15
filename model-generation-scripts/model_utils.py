@@ -293,7 +293,7 @@ def get_alternate_captcha_generator(data_frame, indices, for_training, batch_siz
                 # Add a 1-character label for the current image.
                 labels.append(numpy.array(to_categorical(int(label[j]), categories)))
 
-            if len(images) >= batch_size * len(label): 
+            if len(images) >= batch_size: 
                 yield numpy.array(images), numpy.array(labels)   # Return the current batch.
                 images, labels = [], []                          # Make both lists empty for the next batch.
                 
@@ -420,7 +420,7 @@ def train_model(model, data_frame, train_indices, validation_indices,
 # TODO: add parameters to satisfy what is required for 'get_captcha_generator' function
 def train_model_alternative(model, data_frame, train_indices, validation_indices, 
                             training_batch_size, validation_batch_size, training_epochs,
-                            image_height, image_width, categories):
+                            image_height, image_width, character_length, categories):
     
     training_set_generator = get_alternate_captcha_generator(data_frame, 
                                                    train_indices,
@@ -443,11 +443,11 @@ def train_model_alternative(model, data_frame, train_indices, validation_indices
     ]
 
     history = model.fit(training_set_generator,
-                        steps_per_epoch=len(train_indices)//training_batch_size,
+                        steps_per_epoch=len(train_indices * character_length) // training_batch_size,
                         epochs=training_epochs,
                         callbacks=callbacks,
                         validation_data=validation_set_generator,
-                        validation_steps=len(validation_indices)//validation_batch_size)
+                        validation_steps=len(validation_indices * character_length) // validation_batch_size)
     
     return history
 

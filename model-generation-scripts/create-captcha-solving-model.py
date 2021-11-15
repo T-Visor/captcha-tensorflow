@@ -67,6 +67,7 @@ def main():
                                       TRAINING_EPOCHS,
                                       IMAGE_HEIGHT,
                                       IMAGE_WIDTH,
+                                      DIMENSIONS,
                                       CATEGORIES)
 
     # Save the training history.
