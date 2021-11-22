@@ -259,8 +259,8 @@ def get_alternate_captcha_generator(data_frame, indices, for_training, batch_siz
             # dimensions than what the neural network expects.
             captcha_image = captcha_image.resize((image_height, image_width))
                         
-            # Get the meta-data images to attach to the CAPTCHA image copies.
-            metadata_images = _create_metadata_images(image_height, image_width, len(label))
+            # Get the attacher images which will be binded to the CAPTCHA image copies.
+            attacher_images = _get_attacher_images(image_height, image_width, len(label))
 
             for j in range(len(label)):
                 # Create a new gray-scale image which will combine the 
@@ -270,8 +270,8 @@ def get_alternate_captcha_generator(data_frame, indices, for_training, batch_siz
                 # Paste the CAPTCHA image first.
                 combined_image.paste(captcha_image, (0, 0))
 
-                # Paste the meta-data image underneath the CAPTCHA image.
-                combined_image.paste(metadata_images[j], (0, image_height))
+                # Paste the attacher image underneath the CAPTCHA image.
+                combined_image.paste(attacher_images[j], (0, image_height))
  
                 # Normalize the pixel values of the resulting image to values
                 # in the range (0, 1) (inclusive).
@@ -303,29 +303,40 @@ def get_alternate_captcha_generator(data_frame, indices, for_training, batch_siz
 
 
 
-def _create_metadata_images(captcha_height, captcha_width, character_length):
-    meta_width = captcha_width
-    meta_height = 10
+def _get_attacher_images(captcha_height, captcha_width, character_length):
+    """
+    Args:
+        captcha_height (int): height (in pixels) of the CAPTCHA image
+        captcha_width (int): width (in pixels) of the CAPTCHA image
+        character_length (int): number of characters in the CAPTCHA image
+
+    Returns:
+        a list of 'attacher' images responsible for assisting in single-character recognition
+        in a CAPTCHA image. These generated images are referred to as the 'external binary images'
+        in the implementation of CRABI (CAPTCHA Recognition With Attached Binary Images).
+    """
+    attacher_width = captcha_width
+    attacher_height = 10
     left_side = 0
     right_side = captcha_width
-    metadata_images = []
+    attacher_images = []
 
     for i in range(character_length):
         # Start and end coordinates.
-        rectangle_shape = [(left_side, 0), ((right_side / character_length), meta_height)]
+        rectangle_shape = [(left_side, 0), ((right_side / character_length), attacher_height)]
 
         # Create the base image.
-        metadata_images.append(Image.new('L', (meta_width, meta_height), color='grey'))
+        attacher_images.append(Image.new('L', (attacher_width, attacher_height), color='grey'))
   
         # Draw the rectangle.
-        rectangle_drawer = ImageDraw.Draw(metadata_images[i])
+        rectangle_drawer = ImageDraw.Draw(attacher_images[i])
         rectangle_drawer.rectangle(rectangle_shape, fill ='#ffffff')
 
-        # Move to a new set of image coordinates for drawing the next metadata image.
+        # Move to a new set of image coordinates for drawing the next attacher image.
         left_side = (right_side / character_length) 
-        right_side += meta_width
+        right_side += attacher_width
 
-    return metadata_images
+    return attacher_images
 
 
 
