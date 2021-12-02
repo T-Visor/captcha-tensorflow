@@ -26,7 +26,7 @@ session = tensorflow.compat.v1.Session()
 def get_captcha_label(file_path):
     """
     Precondition: CAPTCHA images were generated using the
-                  'generator.py' script found in this project folder
+                  script found in this project folder
     
     Args:
         file_path (str): the path to the CAPTCHA image
@@ -59,7 +59,7 @@ def create_captcha_dataframe(captcha_images_directory):
     Returns:
         a pandas.DataFrame object storing each captcha file name along with its label
     """
-    files = glob.glob(os.path.join(captcha_images_directory, "*.png"))
+    files = glob.glob(os.path.join(captcha_images_directory, '*.png'))
     attributes = list(map(get_captcha_label, files))
 
     data_frame = pandas.DataFrame(attributes)
@@ -132,7 +132,6 @@ def create_improved_CAPTCHA_NET_model(image_height=100,
     """
         Model creation function modified for new algorithm.
     """
-
     model = Sequential(name='T-NET')
 
     model.add(Input(shape=((image_height + 10), image_width, image_channels)))
@@ -155,18 +154,6 @@ def create_improved_CAPTCHA_NET_model(image_height=100,
                   metrics= ['accuracy'])
     
     return model
-
-
-
-
-def _create_initial_convolutional_layers(input_shape):
-    x = layers.Conv2D(16, 3, activation='relu')(input_shape)
-    x = layers.MaxPooling2D((2, 2))(x)
-    x = layers.Conv2D(32, 3, activation='relu')(x)
-    x = layers.MaxPooling2D((2, 2))(x)
-    x = Model(inputs=input_shape, outputs=x)
-
-    return x
 
 
 
@@ -221,7 +208,7 @@ def create_VGG16_model(image_height=100, image_width=100, image_channels=3,
 
 
 
-def get_alternate_captcha_generator(data_frame, indices, for_training, batch_size=16, image_height=100, image_width=100,
+def get_captcha_generator(data_frame, indices, for_training, batch_size=16, image_height=100, image_width=100,
                                     categories=10):
     """    
     Args:
@@ -240,7 +227,8 @@ def get_alternate_captcha_generator(data_frame, indices, for_training, batch_siz
         categories (int): number of possible values for each position in the CAPTCHA image
     
     Returns:
-        a generator object for producing CAPTCHA images along with their labels
+        a concrete iterator which is responsible for traversing over a CAPTCHA
+        dataset
         
     Yields:
         a pair of lists -> (CAPTCHA images, labels)
@@ -341,60 +329,17 @@ def _get_attacher_images(captcha_height, captcha_width, character_length):
 
 
 
-
-
-def get_captcha_generator(data_frame, indices, for_training, batch_size=16, image_height=100, image_width=100,
-                          categories=10):
-    """    
-    Args:
-        data_frame (pandas.DataFrame): contains the file paths to the CAPTCHA images and their labels
-        
-        indices (int): specifies training indices, testing indices, or validation indices of the DataFrame
-        
-        for_training (bool): 'True' for training or validation set, 'False' to specify a test set 
-        
-        batch_size (int): number of data instances to return when iterated upon
-        
-        image_height (int): height in pixels to resize the CAPTCHA image to
-        
-        image_width (int): width in pixels to resize the CAPTCHA image to
-        
-        categories (int): number of possible values for each position in the CAPTCHA image
-    
-    Returns:
-        a generator object for producing CAPTCHA images along with their labels
-        
-    Yields:
-        a pair of lists -> (CAPTCHA images, labels)
-    """
-    images, labels = [], []
-    
-    while True:
-        for i in indices:
-            captcha = data_frame.iloc[i]
-            file, label = captcha['file'], captcha['label']
-            
-            captcha_image = Image.open(file)
-            captcha_image = captcha_image.resize((image_height, image_width))
-            captcha_image = numpy.array(captcha_image) / 255.0
-            
-            images.append(numpy.array(captcha_image))
-            labels.append(numpy.array([numpy.array(to_categorical(int(i), categories)) for i in label]))
-            
-            if len(images) >= batch_size:
-                yield numpy.array(images), numpy.array(labels)
-                images, labels = [], []
-                
-        if not for_training:
-            break
-
-
-
-
-# TODO: add parameters to satisfy what is required for 'get_captcha_generator' function
-def train_model(model, data_frame, train_indices, validation_indices, 
-                training_batch_size, validation_batch_size, training_epochs,
-                image_height, image_width, categories):
+def train_model(model, 
+                data_frame, 
+                train_indices, 
+                validation_indices, 
+                training_batch_size,
+                validation_batch_size,
+                training_epochs,
+                image_height, 
+                image_width, 
+                character_length, 
+                categories):
     
     training_set_generator = get_captcha_generator(data_frame, 
                                                    train_indices,
@@ -417,43 +362,6 @@ def train_model(model, data_frame, train_indices, validation_indices,
     ]
 
     history = model.fit(training_set_generator,
-                        steps_per_epoch=len(train_indices)//training_batch_size,
-                        epochs=training_epochs,
-                        callbacks=callbacks,
-                        validation_data=validation_set_generator,
-                        validation_steps=len(validation_indices)//validation_batch_size)
-    
-    return history
-
-
-
-
-# TODO: add parameters to satisfy what is required for 'get_captcha_generator' function
-def train_model_alternative(model, data_frame, train_indices, validation_indices, 
-                            training_batch_size, validation_batch_size, training_epochs,
-                            image_height, image_width, character_length, categories):
-    
-    training_set_generator = get_alternate_captcha_generator(data_frame, 
-                                                   train_indices,
-                                                   for_training=True, 
-                                                   batch_size=training_batch_size,
-                                                   image_height=image_height,
-                                                   image_width=image_width,
-                                                   categories=categories)
-    
-    validation_set_generator = get_alternate_captcha_generator(data_frame, 
-                                                     validation_indices,
-                                                     for_training=True, 
-                                                     batch_size=validation_batch_size,
-                                                     image_height=image_height,
-                                                     image_width=image_width,
-                                                     categories=categories)
-
-    callbacks = [
-        ModelCheckpoint("./model_checkpoint", monitor='val_loss')
-    ]
-
-    history = model.fit(training_set_generator,
                         steps_per_epoch=len(train_indices * character_length) // training_batch_size,
                         epochs=training_epochs,
                         callbacks=callbacks,
@@ -461,87 +369,3 @@ def train_model_alternative(model, data_frame, train_indices, validation_indices
                         validation_steps=len(validation_indices * character_length) // validation_batch_size)
     
     return history
-
-
-
-
-def plot_training_history(history):
-    figure, axes = pyplot.subplots(1, 2, figsize=(20, 5))
-
-    axes[0].plot(history.history['acc'], label='Training accuracy')
-    axes[0].plot(history.history['val_acc'], label='Validation accuracy')
-    axes[0].set_xlabel('Epochs')
-    axes[0].legend() 
-
-    axes[1].plot(history.history['loss'], label='Training loss')
-    axes[1].plot(history.history['val_loss'], label='Validation loss')
-    axes[1].set_xlabel('Epochs')
-    axes[1].legend()
-
-
-
-
-# TODO: add parameters to satisfy what is required for 'get_captcha_generator' function
-def get_prediction_results(model, data_frame, test_indices, testing_batch_size, 
-                           image_height, image_width, categories):
-    
-    testing_set_generator = get_captcha_generator(data_frame, 
-                                                  test_indices,
-                                                  for_training=True, 
-                                                  batch_size=testing_batch_size,
-                                                  image_height=image_height,
-                                                  image_width=image_width,
-                                                  categories=categories)
-
-    captcha_images, captcha_text = next(testing_set_generator)
-
-    predictions = model.predict_on_batch(captcha_images)
-
-    true_values = tensorflow.math.argmax(captcha_text, axis=-1)
-    predictions = tensorflow.math.argmax(predictions, axis=-1)
-    
-    return captcha_images, predictions, true_values
-
-
-
-
-def display_predictions_from_model(captcha_images, predictions, true_values, total_to_display=30, columns=5):
-    """
-        Display a plot showing the results of the model's predictions.
-        Each subplot will contain the CAPTCHA image, the model's prediction value, and the true value (label).
-        
-    Args:
-        captcha_images (PNG image): the CAPTCHA image file
-        
-        predictions (EagerTensor): the prediction value made by the model
-        
-        true_values (EagerTensor): the label associated with the CAPTCHA image
-        
-        total_to_display (int): total number of subplots
-        
-        columns (int): number of columns in the plot
-    """
-    
-    with session.as_default():
-        random_indices = numpy.random.permutation(total_to_display)
-        rows = math.ceil(total_to_display / columns)
-
-        figure, axes = pyplot.subplots(rows, columns, figsize=(15, 20))
-    
-        for i, image_index in enumerate(random_indices):
-            result = axes.flat[i]
-            result.imshow(captcha_images[image_index])
-        
-            if tensorflow.executing_eagerly():
-                result.set_title('prediction: {}'.format(
-                                 ''.join(map(str, predictions[image_index].numpy()))))
-                result.set_xlabel('true value: {}'.format(
-                                  ''.join(map(str, true_values[image_index].numpy()))))
-            else:
-                result.set_title('prediction: {}'.format(
-                                 ''.join(map(str, predictions[image_index].eval()))))
-                result.set_xlabel('true value: {}'.format(
-                                  ''.join(map(str, true_values[image_index].eval()))))
-
-            result.set_xticks([])
-            result.set_yticks([])

@@ -58,17 +58,17 @@ def main():
     print('=================================================================')
 
     # Train the model.
-    history = train_model_alternative(model, 
-                                      data_frame, 
-                                      train_indices, 
-                                      validation_indices, 
-                                      TRAINING_BATCH_SIZE, 
-                                      VALIDATION_BATCH_SIZE, 
-                                      TRAINING_EPOCHS,
-                                      IMAGE_HEIGHT,
-                                      IMAGE_WIDTH,
-                                      DIMENSIONS,
-                                      CATEGORIES)
+    history = train_model(model, 
+                          data_frame, 
+                          train_indices, 
+                          validation_indices, 
+                          TRAINING_BATCH_SIZE, 
+                          VALIDATION_BATCH_SIZE, 
+                          TRAINING_EPOCHS,
+                          IMAGE_HEIGHT,
+                          IMAGE_WIDTH,
+                          DIMENSIONS,
+                          CATEGORIES)
 
     # Save the training history.
     with open(TRAINING_HISTORY_FILE_NAME, 'wb') as handle:
