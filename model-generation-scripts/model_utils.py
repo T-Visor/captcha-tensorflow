@@ -19,6 +19,7 @@ from tensorflow.keras.utils import to_categorical
 from keras.applications.densenet import DenseNet121
 from tensorflow.keras.applications.vgg16 import VGG16
 from tensorflow.keras.applications import MobileNet
+from tensorflow.keras.applications.resnet50 import ResNet50
 
 session = tensorflow.compat.v1.Session()
 
@@ -192,6 +193,29 @@ def create_MOBILE_NET_model(image_height=100, image_width=100, image_channels=3,
     base_model = MobileNet(weights='imagenet',
                            include_top=False,
                            input_shape=(image_height + 10, image_width, image_channels))
+
+    flatten_layer = layers.Flatten()
+    prediction_layer = Dense(categories, activation='softmax')
+
+    model = Sequential([
+        base_model,
+        flatten_layer,
+        prediction_layer
+    ])
+
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+    return model
+
+
+
+
+def create_RESNET_model(image_height=100, image_width=100, image_channels=3,
+                       character_length=4, categories=10):
+
+    base_model = ResNet50(weights='imagenet',
+                          include_top=False,
+                          input_shape=(image_height + 10, image_width, image_channels))
 
     flatten_layer = layers.Flatten()
     prediction_layer = Dense(categories, activation='softmax')
