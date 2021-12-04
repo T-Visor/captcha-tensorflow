@@ -17,6 +17,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import *
 from tensorflow.keras.utils import to_categorical
 from keras.applications.densenet import DenseNet121
+from tensorflow.keras.applications.vgg16 import VGG16
 
 session = tensorflow.compat.v1.Session()
 
@@ -161,50 +162,25 @@ def create_improved_CAPTCHA_NET_model(image_height=100,
 def create_VGG16_model(image_height=100, image_width=100, image_channels=3, 
                        character_length=4, categories=10):
     
-    model = Sequential(name='VGG-16')
-    
-    model.add(Input(shape=(image_height, image_width, image_channels)))
+    base_model = VGG16(weights='imagenet',
+                       include_top=False,
+                       input_shape=(image_height + 10, image_width, image_channels))
+    base_model.trainable = False
 
-    model.add(Conv2D(64, (3, 3), padding='same', activation='relu'))
-    model.add(Conv2D(64, (3, 3), padding='same', activation='relu'))
-    model.add(MaxPooling2D(data_format="channels_last", pool_size=(2, 2)))
+    flatten_layer = layers.Flatten()
+    dropout_layer = Dropout(0.5)
+    prediction_layer = Dense(categories, activation='softmax')
 
-    model.add(Conv2D(128, (3, 3), padding='same', activation='relu'))
-    model.add(Conv2D(128, (3, 3), padding='same', activation='relu'))
-    model.add(MaxPooling2D(data_format="channels_last", pool_size=(2, 2)))
-    
-    model.add(Conv2D(256, (3, 3), padding='same', activation='relu'))
-    model.add(Conv2D(256, (3, 3), padding='same', activation='relu'))
-    model.add(Conv2D(256, (3, 3), padding='same', activation='relu'))
-    model.add(MaxPooling2D(data_format="channels_last", pool_size=(2, 2)))
-    
-    model.add(Conv2D(512, (3, 3), padding='same', activation='relu'))
-    model.add(Conv2D(512, (3, 3), padding='same', activation='relu'))
-    model.add(Conv2D(512, (3, 3), padding='same', activation='relu'))
-    model.add(MaxPooling2D(data_format="channels_last", pool_size=(2, 2)))
+    model = Sequential([
+        base_model,
+        flatten_layer,
+        dropout_layer,
+        prediction_layer
+    ])
 
-    model.add(Conv2D(512, (3, 3), padding='same', activation='relu'))
-    model.add(Conv2D(512, (3, 3), padding='same', activation='relu'))
-    model.add(Conv2D(512, (3, 3), padding='same', activation='relu'))
-    #model.add(MaxPooling2D(data_format="channels_last", pool_size=(2, 2)))
-
-    model.add(Flatten())
-    model.add(Dense(256, activation='relu'))
-    model.add(Dropout(0.5))
-    
-    model.add(Dense(256, activation='relu'))
-    model.add(Dropout(0.5))
-
-    model.add(Dense(character_length * categories))
-    model.add(Activation('softmax'))
-    
-    model.add(Reshape((character_length, categories)))
-
-    optimizer = RMSprop(lr=1e-4)
-    model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
     return model
-
 
 
 
@@ -253,7 +229,8 @@ def get_captcha_generator(data_frame, indices, for_training, batch_size=16, imag
             for j in range(len(label)):
                 # Create a new gray-scale image which will combine the 
                 # CAPTCHA image and meta-data image.
-                combined_image = Image.new('L', (image_width, (image_height + 10)), 'white')
+                #combined_image = Image.new('L', (image_width, (image_height + 10)), 'white')
+                combined_image = Image.new('RGB', (image_width, (image_height + 10)), 'white')
 
                 # Paste the CAPTCHA image first.
                 combined_image.paste(captcha_image, (0, 0))
@@ -273,7 +250,7 @@ def get_captcha_generator(data_frame, indices, for_training, batch_size=16, imag
                 #
                 # The value '1' specifies a single color channel for gray-scale
                 # images.
-                combined_image = combined_image.reshape(*combined_image.shape, 1)
+                #combined_image = combined_image.reshape(*combined_image.shape, 1)
 
                 # Add the resulting image to the current batch.
                 images.append(numpy.array(combined_image))
