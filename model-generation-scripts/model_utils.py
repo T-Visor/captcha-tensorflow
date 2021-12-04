@@ -229,8 +229,8 @@ def get_captcha_generator(data_frame, indices, for_training, batch_size=16, imag
             for j in range(len(label)):
                 # Create a new gray-scale image which will combine the 
                 # CAPTCHA image and meta-data image.
-                #combined_image = Image.new('L', (image_width, (image_height + 10)), 'white')
-                combined_image = Image.new('RGB', (image_width, (image_height + 10)), 'white')
+                combined_image = Image.new('L', (image_width, (image_height + 10)), 'white')
+                #combined_image = Image.new('RGB', (image_width, (image_height + 10)), 'white')
 
                 # Paste the CAPTCHA image first.
                 combined_image.paste(captcha_image, (0, 0))
@@ -250,7 +250,7 @@ def get_captcha_generator(data_frame, indices, for_training, batch_size=16, imag
                 #
                 # The value '1' specifies a single color channel for gray-scale
                 # images.
-                #combined_image = combined_image.reshape(*combined_image.shape, 1)
+                combined_image = combined_image.reshape(*combined_image.shape, 1)
 
                 # Add the resulting image to the current batch.
                 images.append(numpy.array(combined_image))
