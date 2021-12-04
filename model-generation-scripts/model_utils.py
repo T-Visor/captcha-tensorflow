@@ -18,6 +18,7 @@ from tensorflow.keras.optimizers import *
 from tensorflow.keras.utils import to_categorical
 from keras.applications.densenet import DenseNet121
 from tensorflow.keras.applications.vgg16 import VGG16
+from tensorflow.keras.applications import MobileNet
 
 session = tensorflow.compat.v1.Session()
 
@@ -184,6 +185,30 @@ def create_VGG16_model(image_height=100, image_width=100, image_channels=3,
 
 
 
+
+def create_MOBILE_NET_model(image_height=100, image_width=100, image_channels=3,
+                       character_length=4, categories=10):
+
+    base_model = MobileNet(weights='imagenet',
+                           include_top=False,
+                           input_shape=(image_height + 10, image_width, image_channels))
+
+    flatten_layer = layers.Flatten()
+    prediction_layer = Dense(categories, activation='softmax')
+
+    model = Sequential([
+        base_model,
+        flatten_layer,
+        prediction_layer
+    ])
+
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+    return model
+
+
+
+
 def get_captcha_generator(data_frame, indices, for_training, batch_size=16, image_height=100, image_width=100,
                                     categories=10):
     """    
@@ -229,8 +254,8 @@ def get_captcha_generator(data_frame, indices, for_training, batch_size=16, imag
             for j in range(len(label)):
                 # Create a new gray-scale image which will combine the 
                 # CAPTCHA image and meta-data image.
-                combined_image = Image.new('L', (image_width, (image_height + 10)), 'white')
-                #combined_image = Image.new('RGB', (image_width, (image_height + 10)), 'white')
+                #combined_image = Image.new('L', (image_width, (image_height + 10)), 'white')
+                combined_image = Image.new('RGB', (image_width, (image_height + 10)), 'white')
 
                 # Paste the CAPTCHA image first.
                 combined_image.paste(captcha_image, (0, 0))
@@ -250,7 +275,7 @@ def get_captcha_generator(data_frame, indices, for_training, batch_size=16, imag
                 #
                 # The value '1' specifies a single color channel for gray-scale
                 # images.
-                combined_image = combined_image.reshape(*combined_image.shape, 1)
+                #combined_image = combined_image.reshape(*combined_image.shape, 1)
 
                 # Add the resulting image to the current batch.
                 images.append(numpy.array(combined_image))

@@ -17,7 +17,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 # GLOBALS
 IMAGE_HEIGHT = 100
 IMAGE_WIDTH = 100
-IMAGE_CHANNELS = 1
+IMAGE_CHANNELS = 3
 CATEGORIES = 10 # represents digits 0-9
 DATA_DIRECTORY = None
 DIMENSIONS = None  
@@ -105,7 +105,7 @@ def parse_command_line_arguments():
                         help='Number of samples for the model at each iteration of training.')
 
     parser.add_argument('-a', '--model_architecture', 
-                        choices=['VGG-16', 'CAPTCHA-NET', 'T-NET'], nargs=1, required=True,
+                        choices=['VGG-16', 'MOBILE-NET', 'CAPTCHA-NET', 'T-NET'], nargs=1, required=True,
                         help='Type of neural network architecture for the model.')
 
     parser.add_argument('-m', '--model_name', nargs=1, required=True,
@@ -168,6 +168,12 @@ def get_trainable_neural_network():
                                    IMAGE_CHANNELS,
                                    DIMENSIONS, 
                                    CATEGORIES)
+    elif MODEL_ARCHITECTURE == 'MOBILE-NET':
+        model = create_MOBILE_NET_model(IMAGE_HEIGHT,
+                                       IMAGE_WIDTH,
+                                       IMAGE_CHANNELS,
+                                       DIMENSIONS,
+                                       CATEGORIES)
     elif MODEL_ARCHITECTURE == 'CAPTCHA-NET':
         model = create_CAPTCHA_NET_model(IMAGE_HEIGHT, 
                                          IMAGE_WIDTH, 
