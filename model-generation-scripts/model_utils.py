@@ -20,7 +20,6 @@ from tensorflow.keras.applications.densenet import DenseNet121
 from tensorflow.keras.applications.vgg16 import VGG16
 from tensorflow.keras.applications import MobileNet
 from tensorflow.keras.applications.resnet50 import ResNet50
-from tensorflow.keras.applications import EfficientNetB1
 
 session = tensorflow.compat.v1.Session()
 
@@ -168,16 +167,16 @@ def create_VGG16_model(image_height=100, image_width=100, image_channels=3,
     base_model = VGG16(weights='imagenet',
                        include_top=False,
                        input_shape=(image_height + 10, image_width, image_channels))
-    base_model.trainable = False
+    #base_model.trainable = False
 
     flatten_layer = layers.Flatten()
-    dropout_layer = Dropout(0.5)
+    #dropout_layer = Dropout(0.5)
     prediction_layer = Dense(categories, activation='softmax')
 
     model = Sequential([
         base_model,
         flatten_layer,
-        dropout_layer,
+    #    dropout_layer,
         prediction_layer
     ])
 
