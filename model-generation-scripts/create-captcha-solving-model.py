@@ -22,8 +22,7 @@ CATEGORIES = 10 # represents digits 0-9
 DATA_DIRECTORY = None
 DIMENSIONS = None  
 TRAINING_EPOCHS = None
-TRAINING_BATCH_SIZE = None
-VALIDATION_BATCH_SIZE = None
+BATCH_SIZE = None
 MODEL_ARCHITECTURE = None
 MODEL_NAME = None
 TRAINING_HISTORY_FILE_NAME = None
@@ -62,8 +61,7 @@ def main():
                           data_frame, 
                           train_indices, 
                           validation_indices, 
-                          TRAINING_BATCH_SIZE, 
-                          VALIDATION_BATCH_SIZE, 
+                          BATCH_SIZE, 
                           TRAINING_EPOCHS,
                           IMAGE_HEIGHT,
                           IMAGE_WIDTH,
@@ -135,8 +133,7 @@ def initialize_globals(arguments):
     global DATA_DIRECTORY
     global DIMENSIONS
     global TRAINING_EPOCHS
-    global TRAINING_BATCH_SIZE
-    global VALIDATION_BATCH_SIZE
+    global BATCH_SIZE
     global MODEL_NAME
     global MODEL_ARCHITECTURE
     global TRAINING_HISTORY_FILE_NAME
@@ -145,8 +142,7 @@ def initialize_globals(arguments):
                                   '/datasets/' + arguments.data_directory[0])
     DIMENSIONS = arguments.length[0]
     TRAINING_EPOCHS = arguments.epochs[0]
-    TRAINING_BATCH_SIZE = arguments.batch_size[0]
-    VALIDATION_BATCH_SIZE = arguments.batch_size[0]
+    BATCH_SIZE = arguments.batch_size[0]
     MODEL_NAME = arguments.model_name[0]
     MODEL_ARCHITECTURE = arguments.model_architecture[0]
     TRAINING_HISTORY_FILE_NAME = arguments.training_history_file_name[0]

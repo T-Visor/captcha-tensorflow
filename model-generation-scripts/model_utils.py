@@ -433,8 +433,7 @@ def train_model(model,
                 data_frame, 
                 train_indices, 
                 validation_indices, 
-                training_batch_size,
-                validation_batch_size,
+                batch_size,
                 training_epochs,
                 image_height, 
                 image_width, 
@@ -444,7 +443,7 @@ def train_model(model,
     training_set_generator = get_captcha_generator(data_frame, 
                                                    train_indices,
                                                    for_training=True, 
-                                                   batch_size=training_batch_size,
+                                                   batch_size=batch_size,
                                                    image_height=image_height,
                                                    image_width=image_width,
                                                    categories=categories)
@@ -452,7 +451,7 @@ def train_model(model,
     validation_set_generator = get_captcha_generator(data_frame, 
                                                      validation_indices,
                                                      for_training=True, 
-                                                     batch_size=validation_batch_size,
+                                                     batch_size=batch_size,
                                                      image_height=image_height,
                                                      image_width=image_width,
                                                      categories=categories)
@@ -462,10 +461,10 @@ def train_model(model,
     ]
 
     history = model.fit(training_set_generator,
-                        steps_per_epoch=len(train_indices * character_length) // training_batch_size,
+                        steps_per_epoch=len(train_indices * character_length) // batch_size,
                         epochs=training_epochs,
                         callbacks=callbacks,
                         validation_data=validation_set_generator,
-                        validation_steps=len(validation_indices * character_length) // validation_batch_size)
+                        validation_steps=len(validation_indices * character_length) // batch_size)
     
     return history
