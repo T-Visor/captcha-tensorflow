@@ -167,7 +167,7 @@ def create_VGG16_model(image_height=100, image_width=100, image_channels=3,
     base_model = VGG16(weights='imagenet',
                        include_top=False,
                        input_shape=(image_height + 10, image_width, image_channels))
-    base_model.trainable = False
+    #base_model.trainable = False
 
     flatten_layer = layers.Flatten()
     #dropout_layer = Dropout(0.5)
