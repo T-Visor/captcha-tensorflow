@@ -16,7 +16,6 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import *
 from tensorflow.keras.utils import to_categorical
-from tensorflow.keras.applications.densenet import DenseNet121
 from tensorflow.keras.applications.vgg16 import VGG16
 from tensorflow.keras.applications import MobileNet
 from tensorflow.keras.applications.resnet50 import ResNet50
@@ -26,8 +25,32 @@ session = tensorflow.compat.v1.Session()
 
 
 
-def get_captcha_label(file_path):
+def create_captcha_dataframe(captcha_images_directory):
     """
+    Args:
+        captcha_images_directory (str): the full file path to the folder where the captcha images
+                                        were generated
+    
+    Returns:
+        a pandas.DataFrame object storing each captcha file name along with its label
+    """
+    files = glob.glob(os.path.join(captcha_images_directory, '*.png'))
+    attributes = list(map(_get_captcha_label, files))
+
+    data_frame = pandas.DataFrame(attributes)
+    data_frame['file'] = files
+    data_frame.columns = ['label', 'file']
+    data_frame = data_frame.dropna()
+    
+    return data_frame
+
+
+
+
+def _get_captcha_label(file_path):
+    """
+    (HELPER FUNCTION)
+
     Precondition: CAPTCHA images were generated using the
                   script found in this project folder
     
@@ -53,28 +76,6 @@ def get_captcha_label(file_path):
 
 
 
-def create_captcha_dataframe(captcha_images_directory):
-    """
-    Args:
-        captcha_images_directory (str): the full file path to the folder where the captcha images
-                                        were generated
-    
-    Returns:
-        a pandas.DataFrame object storing each captcha file name along with its label
-    """
-    files = glob.glob(os.path.join(captcha_images_directory, '*.png'))
-    attributes = list(map(get_captcha_label, files))
-
-    data_frame = pandas.DataFrame(attributes)
-    data_frame['file'] = files
-    data_frame.columns = ['label', 'file']
-    data_frame = data_frame.dropna()
-    
-    return data_frame
-
-
-
-
 def shuffle_and_split_data(data_frame):
     """
         Shuffle and split the data into 2 sets: training and validation.
@@ -83,8 +84,8 @@ def shuffle_and_split_data(data_frame):
         data_frame (pandas.DataFrame): the data to shuffle and split
     
     Returns:
-        3 numpy.ndarray objects -> (train_indices, validation_indices)
-        each hold the index positions for data in the pandas.DataFrame 
+        2 numpy.ndarray objects -> (train_indices, validation_indices)
+        Each hold the index positions for data in the pandas.DataFrame 
     """
     shuffled_indices = numpy.random.permutation(len(data_frame))
 
@@ -98,42 +99,36 @@ def shuffle_and_split_data(data_frame):
 
 
 
-def create_CAPTCHA_NET_model(image_height=100, image_width=100, image_channels=3, 
-                             character_length=4, categories=10):
-
-    input_layer = tensorflow.keras.Input(shape=(image_height, image_width, image_channels))
-
-    hidden_layers = layers.Conv2D(32, 3, activation='relu')(input_layer)
-    hidden_layers = layers.MaxPooling2D((2, 2))(hidden_layers)
-    hidden_layers = layers.Conv2D(64, 3, activation='relu')(hidden_layers)
-    hidden_layers = layers.MaxPooling2D((2, 2))(hidden_layers)
-    hidden_layers = layers.Conv2D(64, 3, activation='relu')(hidden_layers)
-    hidden_layers = layers.MaxPooling2D((2, 2))(hidden_layers)
-
-    hidden_layers = layers.Flatten()(hidden_layers)
-
-    hidden_layers = layers.Dense(1024, activation='relu')(hidden_layers)
-    hidden_layers = layers.Dense(character_length * categories, activation='softmax')(hidden_layers)
-    hidden_layers = layers.Reshape((character_length, categories))(hidden_layers)
-
-    model = models.Model(inputs=input_layer, outputs=hidden_layers, name='CAPTCHA-NET')
-
-    model.compile(optimizer='adam', 
-                  loss='categorical_crossentropy',
-                  metrics= ['accuracy'])
-    
-    return model
-
-
-
-
-def create_improved_CAPTCHA_NET_model(image_height=100, 
-                                      image_width=100, 
-                                      image_channels=1, 
-                                      character_length=4, 
-                                      categories=10):
+def build_TNET_model(image_height=100, 
+                     image_width=100, 
+                     image_channels=3, 
+                     character_length=4, 
+                     categories=10):
     """
-        Model creation function modified for new algorithm.
+        Simple Convolutional Neural Network (CNN) with random weights 
+        to recognize CAPTCHA images.
+
+        Arguments to this function specify the characteristics of the input and
+        output layers.
+
+        Postcondition: Model must be trained after being built
+
+    Args:
+        image_height (int): height (in pixels) of expected input CAPTCHA image 
+
+        image_width (int): width (in pixels) of expected input CAPTCHA image
+
+        image_channels (int): channel count of expected input CAPTCHA image 
+                              ('3' for RGB, '1' for grayscale)
+
+        character_length (int): number of characters in expected input CAPTCHA image
+
+        categories (int): number of possible characters in expected input
+                          CAPTCHA image, specifying category count in the output layer
+                          ('10' for digits 0-9, '26' for alphabet, '36' for alphanumeric)
+
+    Returns:
+        a compiled model ready for training
     """
     model = Sequential(name='T-NET')
 
@@ -161,22 +156,47 @@ def create_improved_CAPTCHA_NET_model(image_height=100,
 
 
 
-def create_VGG16_model(image_height=100, image_width=100, image_channels=3, 
-                       character_length=4, categories=10):
-    
+def build_VGG16_model(image_height=100, 
+                      image_width=100, 
+                      image_channels=3, 
+                      character_length=4, 
+                      categories=10):
+    """
+        VGG16 Convolutional Neural Network (CNN) using weights from ImageNet
+        to recognize CAPTCHA images.
+
+        Arguments to this function specify the characteristics of the input and
+        output layers.
+
+        Postcondition: Model must be trained after being built
+
+    Args:
+        image_height (int): height (in pixels) of expected input CAPTCHA image 
+
+        image_width (int): width (in pixels) of expected input CAPTCHA image
+
+        image_channels (int): channel count of expected input CAPTCHA image 
+                              ('3' for RGB, '1' for grayscale)
+
+        character_length (int): number of characters in expected input CAPTCHA image
+
+        categories (int): number of possible characters in expected input
+                          CAPTCHA image, specifying category count in the output layer
+                          ('10' for digits 0-9, '26' for alphabet, '36' for alphanumeric)
+
+    Returns:
+        a compiled model ready for training
+    """
     base_model = VGG16(weights='imagenet',
                        include_top=False,
                        input_shape=(image_height + 10, image_width, image_channels))
-    #base_model.trainable = False
 
     flatten_layer = layers.Flatten()
-    #dropout_layer = Dropout(0.5)
     prediction_layer = Dense(categories, activation='softmax')
 
     model = Sequential([
         base_model,
         flatten_layer,
-    #    dropout_layer,
         prediction_layer
     ])
 
@@ -187,9 +207,37 @@ def create_VGG16_model(image_height=100, image_width=100, image_channels=3,
 
 
 
-def create_MOBILE_NET_model(image_height=100, image_width=100, image_channels=3,
-                       character_length=4, categories=10):
+def build_MOBILENET_model(image_height=100, 
+                          image_width=100, 
+                          image_channels=3,
+                          character_length=4, 
+                          categories=10):
+    """
+        MobileNet Convolutional Neural Network (CNN) using weights from ImageNet
+        to recognize CAPTCHA images.
 
+        Arguments to this function specify the characteristics of the input and
+        output layers.
+
+        Postcondition: Model must be trained after being built
+
+    Args:
+        image_height (int): height (in pixels) of expected input CAPTCHA image 
+
+        image_width (int): width (in pixels) of expected input CAPTCHA image
+
+        image_channels (int): channel count of expected input CAPTCHA image 
+                              ('3' for RGB, '1' for grayscale)
+
+        character_length (int): number of characters in expected input CAPTCHA image
+
+        categories (int): number of possible characters in expected input
+                          CAPTCHA image, specifying category count in the output layer
+                          ('10' for digits 0-9, '26' for alphabet, '36' for alphanumeric)
+
+    Returns:
+        a compiled model ready for training
+    """
     base_model = MobileNet(weights='imagenet',
                            include_top=False,
                            input_shape=(image_height + 10, image_width, image_channels))
@@ -210,9 +258,37 @@ def create_MOBILE_NET_model(image_height=100, image_width=100, image_channels=3,
 
 
 
-def create_RESNET_model(image_height=100, image_width=100, image_channels=3,
-                       character_length=4, categories=10):
+def build_RESNET_model(image_height=100, 
+                       image_width=100, 
+                       image_channels=3,
+                       character_length=4, 
+                       categories=10):
+    """
+        ResNet50 Convolutional Neural Network (CNN) using weights from ImageNet
+        to recognize CAPTCHA images.
 
+        Arguments to this function specify the characteristics of the input and
+        output layers.
+
+        Postcondition: Model must be trained after being built
+
+    Args:
+        image_height (int): height (in pixels) of expected input CAPTCHA image 
+
+        image_width (int): width (in pixels) of expected input CAPTCHA image
+
+        image_channels (int): channel count of expected input CAPTCHA image 
+                              ('3' for RGB, '1' for grayscale)
+
+        character_length (int): number of characters in expected input CAPTCHA image
+
+        categories (int): number of possible characters in expected input
+                          CAPTCHA image, specifying category count in the output layer
+                          ('10' for digits 0-9, '26' for alphabet, '36' for alphanumeric)
+
+    Returns:
+        a compiled model ready for training
+    """
     base_model = ResNet50(weights='imagenet',
                           include_top=False,
                           input_shape=(image_height + 10, image_width, image_channels))
@@ -233,54 +309,13 @@ def create_RESNET_model(image_height=100, image_width=100, image_channels=3,
 
 
 
-def create_DENSE_NET_model(image_height=100, image_width=100, image_channels=3,
-                          character_length=4, categories=10):
-
-    base_model = DenseNet121(weights='imagenet',
-                             include_top=False,
-                             input_shape=(image_height + 10, image_width, image_channels))
-
-    flatten_layer = layers.Flatten()
-    prediction_layer = Dense(categories, activation='softmax')
-
-    model = Sequential([
-        base_model,
-        flatten_layer,
-        prediction_layer
-    ])
-
-    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-
-    return model
-
-
-
-
-def create_EFFICIENT_NET_model(image_height=100, image_width=100, image_channels=3,
-                          character_length=4, categories=10):
-
-    base_model = EfficientNetB1(weights='imagenet',
-                                include_top=False,
-                                input_shape=(image_height + 10, image_width, image_channels))
-
-    flatten_layer = layers.Flatten()
-    prediction_layer = Dense(categories, activation='softmax')
-
-    model = Sequential([
-        base_model,
-        flatten_layer,
-        prediction_layer
-    ])
-
-    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-
-    return model
-    
-
-
-
-def get_captcha_generator(data_frame, indices, for_training, batch_size=16, image_height=100, image_width=100,
-                                    categories=10):
+def get_captcha_generator(data_frame, 
+                          indices, 
+                          for_training, 
+                          batch_size=16, 
+                          image_height=100, 
+                          image_width=100,
+                          categories=10):
     """    
     Args:
         data_frame (pandas.DataFrame): contains the file paths to the CAPTCHA images and their labels
@@ -337,14 +372,7 @@ def get_captcha_generator(data_frame, indices, for_training, batch_size=16, imag
                 # in the range (0, 1) (inclusive).
                 combined_image = numpy.array(combined_image) / 255.0
 
-                # By default, gray-scale images which are converted to numpy
-                # arrays will only contain two dimensions (height, width). 
-                #
-                # This instruction will manually add a third dimension 
-                # (color channel) since it is required by the neural network.
-                #
-                # The value '1' specifies a single color channel for gray-scale
-                # images.
+                # The value '1' specifies a single color channel for gray-scale images
                 #combined_image = combined_image.reshape(*combined_image.shape, 1)
 
                 # Add the resulting image to the current batch.
