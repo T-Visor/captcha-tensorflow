@@ -8,7 +8,7 @@ import os
 import pandas
 import tensorflow
 
-from PIL import Image
+from PIL import Image, ImageDraw
 from tensorflow.keras import datasets, layers, models
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.layers import *
@@ -16,7 +16,10 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import *
 from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.applications.densenet import DenseNet121
 from tensorflow.keras.applications.vgg16 import VGG16
+from tensorflow.keras.applications import MobileNet
+from tensorflow.keras.applications.resnet50 import ResNet50
 
 session = tensorflow.compat.v1.Session()
 
@@ -26,7 +29,7 @@ session = tensorflow.compat.v1.Session()
 def get_captcha_label(file_path):
     """
     Precondition: CAPTCHA images were generated using the
-                  'generator.py' script found in this project folder
+                  script found in this project folder
     
     Args:
         file_path (str): the path to the CAPTCHA image
@@ -59,7 +62,7 @@ def create_captcha_dataframe(captcha_images_directory):
     Returns:
         a pandas.DataFrame object storing each captcha file name along with its label
     """
-    files = glob.glob(os.path.join(captcha_images_directory, "*.png"))
+    files = glob.glob(os.path.join(captcha_images_directory, '*.png'))
     attributes = list(map(get_captcha_label, files))
 
     data_frame = pandas.DataFrame(attributes)
@@ -124,26 +127,30 @@ def create_CAPTCHA_NET_model(image_height=100, image_width=100, image_channels=3
 
 
 
-def create_improved_CAPTCHA_NET_model(image_height=100, image_width=100, image_channels=3, 
-                                      character_length=4, categories=10):
-    
+def create_improved_CAPTCHA_NET_model(image_height=100, 
+                                      image_width=100, 
+                                      image_channels=1, 
+                                      character_length=4, 
+                                      categories=10):
+    """
+        Model creation function modified for new algorithm.
+    """
     model = Sequential(name='T-NET')
 
-    model.add(Input(shape=(image_height, image_width, image_channels)))
+    model.add(Input(shape=((image_height + 10), image_width, image_channels)))
     
-    model.add(Conv2D(filters=16, kernel_size=(3,3),padding='same', activation='relu'))
-    model.add(MaxPool2D(pool_size=(2,2),strides=(2,2)))
+    model.add(Conv2D(filters=16, kernel_size=(3,3), padding='same', activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2,2), padding='same'))
 
     model.add(Conv2D(filters=32, kernel_size=(3,3), padding='same', activation='relu'))
-    model.add(MaxPool2D(pool_size=(2,2),strides=(2,2)))
+    model.add(MaxPooling2D(pool_size=(2,2), padding='same'))
 
     model.add(Flatten())
     
     model.add(Dense(units=1024,activation='relu'))
     model.add(Dropout(0.5))
     
-    model.add(Dense(character_length * categories, activation='softmax'))
-    model.add(Reshape((character_length, categories)))
+    model.add(Dense(categories, activation='softmax'))
     
     model.compile(optimizer='adam', 
                   loss='categorical_crossentropy',
@@ -156,18 +163,112 @@ def create_improved_CAPTCHA_NET_model(image_height=100, image_width=100, image_c
 
 def create_VGG16_model(image_height=100, image_width=100, image_channels=3, 
                        character_length=4, categories=10):
-
-    base_model = VGG16(weights='imagenet', include_top=False,
-                  input_shape=(image_height, image_width, image_channels))
+    
+    base_model = VGG16(weights='imagenet',
+                       include_top=False,
+                       input_shape=(image_height + 10, image_width, image_channels))
+    #base_model.trainable = False
 
     flatten_layer = layers.Flatten()
-    dense_layer = Dense(character_length * categories, activation='softmax')
-    prediction_layer = Reshape((character_length, categories))
-    
+    #dropout_layer = Dropout(0.5)
+    prediction_layer = Dense(categories, activation='softmax')
+
     model = Sequential([
         base_model,
         flatten_layer,
-        dense_layer,
+    #    dropout_layer,
+        prediction_layer
+    ])
+
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+    return model
+
+
+
+
+def create_MOBILE_NET_model(image_height=100, image_width=100, image_channels=3,
+                       character_length=4, categories=10):
+
+    base_model = MobileNet(weights='imagenet',
+                           include_top=False,
+                           input_shape=(image_height + 10, image_width, image_channels))
+
+    flatten_layer = layers.Flatten()
+    prediction_layer = Dense(categories, activation='softmax')
+
+    model = Sequential([
+        base_model,
+        flatten_layer,
+        prediction_layer
+    ])
+
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+    return model
+
+
+
+
+def create_RESNET_model(image_height=100, image_width=100, image_channels=3,
+                       character_length=4, categories=10):
+
+    base_model = ResNet50(weights='imagenet',
+                          include_top=False,
+                          input_shape=(image_height + 10, image_width, image_channels))
+
+    flatten_layer = layers.Flatten()
+    prediction_layer = Dense(categories, activation='softmax')
+
+    model = Sequential([
+        base_model,
+        flatten_layer,
+        prediction_layer
+    ])
+
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+    return model
+
+
+
+
+def create_DENSE_NET_model(image_height=100, image_width=100, image_channels=3,
+                          character_length=4, categories=10):
+
+    base_model = DenseNet121(weights='imagenet',
+                             include_top=False,
+                             input_shape=(image_height + 10, image_width, image_channels))
+
+    flatten_layer = layers.Flatten()
+    prediction_layer = Dense(categories, activation='softmax')
+
+    model = Sequential([
+        base_model,
+        flatten_layer,
+        prediction_layer
+    ])
+
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+    return model
+
+
+
+
+def create_EFFICIENT_NET_model(image_height=100, image_width=100, image_channels=3,
+                          character_length=4, categories=10):
+
+    base_model = EfficientNetB1(weights='imagenet',
+                                include_top=False,
+                                input_shape=(image_height + 10, image_width, image_channels))
+
+    flatten_layer = layers.Flatten()
+    prediction_layer = Dense(categories, activation='softmax')
+
+    model = Sequential([
+        base_model,
+        flatten_layer,
         prediction_layer
     ])
 
@@ -179,7 +280,7 @@ def create_VGG16_model(image_height=100, image_width=100, image_channels=3,
 
 
 def get_captcha_generator(data_frame, indices, for_training, batch_size=16, image_height=100, image_width=100,
-                          categories=10):
+                                    categories=10):
     """    
     Args:
         data_frame (pandas.DataFrame): contains the file paths to the CAPTCHA images and their labels
@@ -197,7 +298,8 @@ def get_captcha_generator(data_frame, indices, for_training, batch_size=16, imag
         categories (int): number of possible values for each position in the CAPTCHA image
     
     Returns:
-        a generator object for producing CAPTCHA images along with their labels
+        a concrete iterator which is responsible for traversing over a CAPTCHA
+        dataset
         
     Yields:
         a pair of lists -> (CAPTCHA images, labels)
@@ -209,16 +311,51 @@ def get_captcha_generator(data_frame, indices, for_training, batch_size=16, imag
             captcha = data_frame.iloc[i]
             file, label = captcha['file'], captcha['label']
             
-            captcha_image = Image.open(file)
+            # Open and convert the CAPTCHA image to gray-scale.
+            captcha_image = Image.open(file).convert('L')
+        
+            # Resize, in-case the generated CAPTCHA image has different
+            # dimensions than what the neural network expects.
             captcha_image = captcha_image.resize((image_height, image_width))
-            captcha_image = numpy.array(captcha_image) / 255.0
-            
-            images.append(numpy.array(captcha_image))
-            labels.append(numpy.array([numpy.array(to_categorical(int(i), categories)) for i in label]))
-            
-            if len(images) >= batch_size:
-                yield numpy.array(images), numpy.array(labels)
-                images, labels = [], []
+                        
+            # Get the attacher images which will be binded to the CAPTCHA image copies.
+            attacher_images = _get_attacher_images(image_height, image_width, len(label))
+
+            for j in range(len(label)):
+                # Create a new gray-scale image which will combine the 
+                # CAPTCHA image and meta-data image.
+                #combined_image = Image.new('L', (image_width, (image_height + 10)), 'white')
+                combined_image = Image.new('RGB', (image_width, (image_height + 10)), 'white')
+
+                # Paste the CAPTCHA image first.
+                combined_image.paste(captcha_image, (0, 0))
+
+                # Paste the attacher image underneath the CAPTCHA image.
+                combined_image.paste(attacher_images[j], (0, image_height))
+ 
+                # Normalize the pixel values of the resulting image to values
+                # in the range (0, 1) (inclusive).
+                combined_image = numpy.array(combined_image) / 255.0
+
+                # By default, gray-scale images which are converted to numpy
+                # arrays will only contain two dimensions (height, width). 
+                #
+                # This instruction will manually add a third dimension 
+                # (color channel) since it is required by the neural network.
+                #
+                # The value '1' specifies a single color channel for gray-scale
+                # images.
+                #combined_image = combined_image.reshape(*combined_image.shape, 1)
+
+                # Add the resulting image to the current batch.
+                images.append(numpy.array(combined_image))
+
+                # Add a 1-character label for the current image.
+                labels.append(numpy.array(to_categorical(int(label[j]), categories)))
+
+            if len(images) >= batch_size: 
+                yield numpy.array(images), numpy.array(labels)   # Return the current batch.
+                images, labels = [], []                          # Make both lists empty for the next batch.
                 
         if not for_training:
             break
@@ -226,10 +363,55 @@ def get_captcha_generator(data_frame, indices, for_training, batch_size=16, imag
 
 
 
-# TODO: add parameters to satisfy what is required for 'get_captcha_generator' function
-def train_model(model, data_frame, train_indices, validation_indices, 
-                training_batch_size, validation_batch_size, training_epochs,
-                image_height, image_width, categories):
+def _get_attacher_images(captcha_height, captcha_width, character_length):
+    """
+    Args:
+        captcha_height (int): height (in pixels) of the CAPTCHA image
+        captcha_width (int): width (in pixels) of the CAPTCHA image
+        character_length (int): number of characters in the CAPTCHA image
+
+    Returns:
+        a list of 'attacher' images responsible for assisting in single-character recognition
+        in a CAPTCHA image. These generated images are referred to as the 'external binary images'
+        in the implementation of CRABI (CAPTCHA Recognition With Attached Binary Images).
+    """
+    attacher_width = captcha_width
+    attacher_height = 10
+    left_side = 0
+    right_side = captcha_width
+    attacher_images = []
+
+    for i in range(character_length):
+        # Start and end coordinates.
+        rectangle_shape = [(left_side, 0), ((right_side / character_length), attacher_height)]
+
+        # Create the base image.
+        attacher_images.append(Image.new('L', (attacher_width, attacher_height), color='grey'))
+  
+        # Draw the rectangle.
+        rectangle_drawer = ImageDraw.Draw(attacher_images[i])
+        rectangle_drawer.rectangle(rectangle_shape, fill ='#ffffff')
+
+        # Move to a new set of image coordinates for drawing the next attacher image.
+        left_side = (right_side / character_length) 
+        right_side += attacher_width
+
+    return attacher_images
+
+
+
+
+def train_model(model, 
+                data_frame, 
+                train_indices, 
+                validation_indices, 
+                training_batch_size,
+                validation_batch_size,
+                training_epochs,
+                image_height, 
+                image_width, 
+                character_length, 
+                categories):
     
     training_set_generator = get_captcha_generator(data_frame, 
                                                    train_indices,
@@ -252,94 +434,10 @@ def train_model(model, data_frame, train_indices, validation_indices,
     ]
 
     history = model.fit(training_set_generator,
-                        steps_per_epoch=len(train_indices)//training_batch_size,
+                        steps_per_epoch=len(train_indices * character_length) // training_batch_size,
                         epochs=training_epochs,
                         callbacks=callbacks,
                         validation_data=validation_set_generator,
-                        validation_steps=len(validation_indices)//validation_batch_size)
+                        validation_steps=len(validation_indices * character_length) // validation_batch_size)
     
     return history
-
-
-
-
-def plot_training_history(history):
-    figure, axes = pyplot.subplots(1, 2, figsize=(20, 5))
-
-    axes[0].plot(history.history['acc'], label='Training accuracy')
-    axes[0].plot(history.history['val_acc'], label='Validation accuracy')
-    axes[0].set_xlabel('Epochs')
-    axes[0].legend() 
-
-    axes[1].plot(history.history['loss'], label='Training loss')
-    axes[1].plot(history.history['val_loss'], label='Validation loss')
-    axes[1].set_xlabel('Epochs')
-    axes[1].legend()
-
-
-
-
-# TODO: add parameters to satisfy what is required for 'get_captcha_generator' function
-def get_prediction_results(model, data_frame, test_indices, testing_batch_size, 
-                           image_height, image_width, categories):
-    
-    testing_set_generator = get_captcha_generator(data_frame, 
-                                                  test_indices,
-                                                  for_training=True, 
-                                                  batch_size=testing_batch_size,
-                                                  image_height=image_height,
-                                                  image_width=image_width,
-                                                  categories=categories)
-
-    captcha_images, captcha_text = next(testing_set_generator)
-
-    predictions = model.predict_on_batch(captcha_images)
-
-    true_values = tensorflow.math.argmax(captcha_text, axis=-1)
-    predictions = tensorflow.math.argmax(predictions, axis=-1)
-    
-    return captcha_images, predictions, true_values
-
-
-
-
-def display_predictions_from_model(captcha_images, predictions, true_values, total_to_display=30, columns=5):
-    """
-        Display a plot showing the results of the model's predictions.
-        Each subplot will contain the CAPTCHA image, the model's prediction value, and the true value (label).
-        
-    Args:
-        captcha_images (PNG image): the CAPTCHA image file
-        
-        predictions (EagerTensor): the prediction value made by the model
-        
-        true_values (EagerTensor): the label associated with the CAPTCHA image
-        
-        total_to_display (int): total number of subplots
-        
-        columns (int): number of columns in the plot
-    """
-    
-    with session.as_default():
-        random_indices = numpy.random.permutation(total_to_display)
-        rows = math.ceil(total_to_display / columns)
-
-        figure, axes = pyplot.subplots(rows, columns, figsize=(15, 20))
-    
-        for i, image_index in enumerate(random_indices):
-            result = axes.flat[i]
-            result.imshow(captcha_images[image_index])
-        
-            if tensorflow.executing_eagerly():
-                result.set_title('prediction: {}'.format(
-                                 ''.join(map(str, predictions[image_index].numpy()))))
-                result.set_xlabel('true value: {}'.format(
-                                  ''.join(map(str, true_values[image_index].numpy()))))
-            else:
-                result.set_title('prediction: {}'.format(
-                                 ''.join(map(str, predictions[image_index].eval()))))
-                result.set_xlabel('true value: {}'.format(
-                                  ''.join(map(str, true_values[image_index].eval()))))
-
-            result.set_xticks([])
-            result.set_yticks([])

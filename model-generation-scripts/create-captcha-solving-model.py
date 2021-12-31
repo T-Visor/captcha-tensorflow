@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import argparse
 import os
@@ -44,7 +44,7 @@ def main():
     # Load the CAPTCHA dataset.
     data_frame = create_captcha_dataframe(DATA_DIRECTORY)
 
-    # Create the untrained model.
+    # Create the trainable model and display its architecture configuration.
     model = get_trainable_neural_network()
     model.summary()
 
@@ -52,8 +52,8 @@ def main():
     train_indices, validation_indices = shuffle_and_split_data(data_frame)
 
     # Display the number of samples in each set.
-    print('=================================================================')
-    print('training count: %s, validation count: %s' % (
+    print('=================================================================\n')
+    print('training count: %s, validation count: %s\n' % (
           len(train_indices), len(validation_indices)))
     print('=================================================================')
 
@@ -67,6 +67,7 @@ def main():
                           TRAINING_EPOCHS,
                           IMAGE_HEIGHT,
                           IMAGE_WIDTH,
+                          DIMENSIONS,
                           CATEGORIES)
 
     # Save the training history.
@@ -100,11 +101,11 @@ def parse_command_line_arguments():
     parser.add_argument('-e', '--epochs', type=int, nargs=1, required=True,
                         help='Number of epochs when training the model.')
 
-    parser.add_argument('-b', '--batch_size', type=int, choices=[16, 32, 64, 128, 256, 512, 1024], nargs=1, required=True,
+    parser.add_argument('-b', '--batch_size', type=int, choices=[1, 16, 32, 64, 128], nargs=1, required=True,
                         help='Number of samples for the model at each iteration of training.')
 
     parser.add_argument('-a', '--model_architecture', 
-                        choices=['VGG-16', 'CAPTCHA-NET', 'T-NET'], nargs=1, required=True,
+                        choices=['VGG-16', 'MOBILE-NET','RESNET', 'DENSE-NET', 'EFFICIENT-NET','CAPTCHA-NET', 'T-NET'], nargs=1, required=True,
                         help='Type of neural network architecture for the model.')
 
     parser.add_argument('-m', '--model_name', nargs=1, required=True,
@@ -167,6 +168,30 @@ def get_trainable_neural_network():
                                    IMAGE_CHANNELS,
                                    DIMENSIONS, 
                                    CATEGORIES)
+    elif MODEL_ARCHITECTURE == 'MOBILE-NET':
+        model = create_MOBILE_NET_model(IMAGE_HEIGHT,
+                                       IMAGE_WIDTH,
+                                       IMAGE_CHANNELS,
+                                       DIMENSIONS,
+                                       CATEGORIES)
+    elif MODEL_ARCHITECTURE == 'RESNET':
+        model = create_RESNET_model(IMAGE_HEIGHT,
+                                    IMAGE_WIDTH,
+                                    IMAGE_CHANNELS,
+                                    DIMENSIONS,
+                                    CATEGORIES)
+    elif MODEL_ARCHITECTURE == 'DENSE-NET':
+        model = create_DENSE_NET_model(IMAGE_HEIGHT,
+                                      IMAGE_WIDTH,
+                                      IMAGE_CHANNELS,
+                                      DIMENSIONS,
+                                      CATEGORIES)
+    elif MODEL_ARCHITECTURE == 'EFFICIENT-NET':
+        model = create_EFFICIENT_NET_model(IMAGE_HEIGHT,
+                                           IMAGE_WIDTH,
+                                           IMAGE_CHANNELS,
+                                           DIMENSIONS,
+                                           CATEGORIES)
     elif MODEL_ARCHITECTURE == 'CAPTCHA-NET':
         model = create_CAPTCHA_NET_model(IMAGE_HEIGHT, 
                                          IMAGE_WIDTH, 
