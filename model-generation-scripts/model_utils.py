@@ -228,6 +228,72 @@ def build_transfer_learning_model(model_architecture_name,
 
 
 
+def train_model(model, 
+                data_frame, 
+                train_indices, 
+                validation_indices, 
+                batch_size,
+                training_epochs,
+                image_height, 
+                image_width, 
+                character_length, 
+                categories):                   
+
+    training_set_iterator, validation_set_iterator = _get_CRABI_iterators(data_frame, 
+                                                                          train_indices, 
+                                                                          validation_indices,
+                                                                          batch_size, 
+                                                                          image_height, 
+                                                                          image_width,
+                                                                          character_length,
+                                                                          categories)
+
+    callbacks = [
+        ModelCheckpoint("./model_checkpoint", monitor='val_loss')
+    ]
+
+    history = model.fit(training_set_iterator,
+                        steps_per_epoch=len(train_indices * character_length) // batch_size,
+                        epochs=training_epochs,
+                        callbacks=callbacks,
+                        validation_data=validation_set_iterator,
+                        validation_steps=len(validation_indices * character_length) // batch_size)
+    
+    return history
+
+
+
+
+def _get_CRABI_iterators(data_frame,
+                         train_indices,
+                         validation_indices,
+                         batch_size,
+                         image_height, 
+                         image_width, 
+                         character_length, 
+                         categories):
+
+    training_set_iterator = generate_CRABI_preprocessed_images(data_frame, 
+                                                               train_indices,
+                                                               for_training=True, 
+                                                               batch_size=batch_size,
+                                                               image_height=image_height,
+                                                               image_width=image_width,
+                                                               categories=categories)
+    
+    validation_set_iterator = generate_CRABI_preprocessed_images(data_frame, 
+                                                                 validation_indices,
+                                                                 for_training=True, 
+                                                                 batch_size=batch_size,
+                                                                 image_height=image_height,
+                                                                 image_width=image_width,
+                                                                 categories=categories)
+
+    return training_set_iterator, validation_set_iterator
+
+
+
+
 def generate_CRABI_preprocessed_images(data_frame, 
                                        indices, 
                                        for_training, 
@@ -313,6 +379,8 @@ def generate_CRABI_preprocessed_images(data_frame,
 
 def _get_attacher_images(captcha_height, captcha_width, character_length):
     """
+    (HELPER FUNCTION)
+
     Args:
         captcha_height (int): height (in pixels) of the CAPTCHA image
         captcha_width (int): width (in pixels) of the CAPTCHA image
@@ -345,48 +413,3 @@ def _get_attacher_images(captcha_height, captcha_width, character_length):
         right_side += attacher_width
 
     return attacher_images
-
-
-
-
-def train_model(model, 
-                data_frame, 
-                train_indices, 
-                validation_indices, 
-                batch_size,
-                training_epochs,
-                image_height, 
-                image_width, 
-                character_length, 
-                categories):
-   
-    # TODO: have a separate function 'get_dataframe_iterators()' which returns the 2 generators
-    # and have them passed to the 'train_model()' function instead.
-    training_set_generator = generate_CRABI_preprocessed_images(data_frame, 
-                                                   train_indices,
-                                                   for_training=True, 
-                                                   batch_size=batch_size,
-                                                   image_height=image_height,
-                                                   image_width=image_width,
-                                                   categories=categories)
-    
-    validation_set_generator = generate_CRABI_preprocessed_images(data_frame, 
-                                                     validation_indices,
-                                                     for_training=True, 
-                                                     batch_size=batch_size,
-                                                     image_height=image_height,
-                                                     image_width=image_width,
-                                                     categories=categories)
-
-    callbacks = [
-        ModelCheckpoint("./model_checkpoint", monitor='val_loss')
-    ]
-
-    history = model.fit(training_set_generator,
-                        steps_per_epoch=len(train_indices * character_length) // batch_size,
-                        epochs=training_epochs,
-                        callbacks=callbacks,
-                        validation_data=validation_set_generator,
-                        validation_steps=len(validation_indices * character_length) // batch_size)
-    
-    return history
