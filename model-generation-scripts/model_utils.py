@@ -228,14 +228,24 @@ def build_transfer_learning_model(model_architecture_name,
 
 
 
-def get_captcha_generator(data_frame, 
-                          indices, 
-                          for_training, 
-                          batch_size=16, 
-                          image_height=100, 
-                          image_width=100,
-                          categories=10):
+def generate_CRABI_preprocessed_images(data_frame, 
+                                       indices, 
+                                       for_training, 
+                                       batch_size=16, 
+                                       image_height=100, 
+                                       image_width=100,
+                                       categories=10):
     """    
+        (GENERATOR FUNCTION)
+
+        Creates an iterator object, which will generate CAPTCHA images using a
+        variation of the CRABI (CAPTCHA Recognition with Attached Binary
+        Images) algorithm. 
+
+        This mechanism is used to facilitate CAPTCHA-recognition on a per-character basis, 
+        by attaching black bars with markers to the bottom of CAPTCHA image copies, and giving each
+        image a single-character label.
+
     Args:
         data_frame (pandas.DataFrame): contains the file paths to the CAPTCHA images and their labels
         
@@ -252,11 +262,10 @@ def get_captcha_generator(data_frame,
         categories (int): number of possible values for each position in the CAPTCHA image
     
     Returns:
-        a concrete iterator which is responsible for traversing over a CAPTCHA
-        dataset
+        a concrete iterator to traverse over a CAPTCHA dataset
         
     Yields:
-        a pair of lists -> (CAPTCHA images, labels)
+        a pair of lists -> (CRABI-preprocessed CAPTCHA images, single-character labels)
     """
     images, labels = [], []
     
@@ -265,34 +274,26 @@ def get_captcha_generator(data_frame,
             captcha = data_frame.iloc[i]
             file, label = captcha['file'], captcha['label']
             
-            # Open and convert the CAPTCHA image to gray-scale.
-            captcha_image = Image.open(file).convert('L')
-        
-            # Resize, in-case the generated CAPTCHA image has different
-            # dimensions than what the neural network expects.
+            captcha_image = Image.open(file).convert('L') # open CAPTCHA image in gray-scale
             captcha_image = captcha_image.resize((image_height, image_width))
                         
-            # Get the attacher images which will be binded to the CAPTCHA image copies.
+            # Get the black bars with marker images to attach to the bottom of each
+            # CAPTCHA image copy.
             attacher_images = _get_attacher_images(image_height, image_width, len(label))
 
             for j in range(len(label)):
-                # Create a new gray-scale image which will combine the 
-                # CAPTCHA image and meta-data image.
-                #combined_image = Image.new('L', (image_width, (image_height + 10)), 'white')
+                # Create a blank image for CRABI-preprocessing.
                 combined_image = Image.new('RGB', (image_width, (image_height + 10)), 'white')
 
                 # Paste the CAPTCHA image first.
                 combined_image.paste(captcha_image, (0, 0))
 
-                # Paste the attacher image underneath the CAPTCHA image.
+                # Paste the black bar with marker underneath the CAPTCHA image.
                 combined_image.paste(attacher_images[j], (0, image_height))
  
                 # Normalize the pixel values of the resulting image to values
                 # in the range (0, 1) (inclusive).
                 combined_image = numpy.array(combined_image) / 255.0
-
-                # The value '1' specifies a single color channel for gray-scale images
-                #combined_image = combined_image.reshape(*combined_image.shape, 1)
 
                 # Add the resulting image to the current batch.
                 images.append(numpy.array(combined_image))
@@ -318,7 +319,7 @@ def _get_attacher_images(captcha_height, captcha_width, character_length):
         character_length (int): number of characters in the CAPTCHA image
 
     Returns:
-        a list of 'attacher' images responsible for assisting in single-character recognition
+        a list of black bar images with markers responsible for assisting in single-character recognition
         in a CAPTCHA image. These generated images are referred to as the 'external binary images'
         in the implementation of CRABI (CAPTCHA Recognition With Attached Binary Images).
     """
@@ -358,8 +359,10 @@ def train_model(model,
                 image_width, 
                 character_length, 
                 categories):
-    
-    training_set_generator = get_captcha_generator(data_frame, 
+   
+    # TODO: have a separate function 'get_dataframe_iterators()' which returns the 2 generators
+    # and have them passed to the 'train_model()' function instead.
+    training_set_generator = generate_CRABI_preprocessed_images(data_frame, 
                                                    train_indices,
                                                    for_training=True, 
                                                    batch_size=batch_size,
@@ -367,7 +370,7 @@ def train_model(model,
                                                    image_width=image_width,
                                                    categories=categories)
     
-    validation_set_generator = get_captcha_generator(data_frame, 
+    validation_set_generator = generate_CRABI_preprocessed_images(data_frame, 
                                                      validation_indices,
                                                      for_training=True, 
                                                      batch_size=batch_size,
