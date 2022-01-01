@@ -99,14 +99,13 @@ def shuffle_and_split_data(data_frame):
 
 
 
-def build_TNET_model(image_height=100, 
-                     image_width=100, 
-                     image_channels=3, 
-                     character_length=4, 
-                     categories=10):
+def build_TNET_model(image_height, 
+                     image_width, 
+                     image_channels, 
+                     character_length, 
+                     categories):
     """
-        Simple Convolutional Neural Network (CNN) with random weights 
-        to recognize CAPTCHA images.
+        Builds a simple Convolutional Neural Network (CNN) to recognize CAPTCHA images.
 
         Arguments to this function specify the characteristics of the input and
         output layers.
@@ -156,21 +155,26 @@ def build_TNET_model(image_height=100,
 
 
 
-def build_VGG16_model(image_height=100, 
-                      image_width=100, 
-                      image_channels=3, 
-                      character_length=4, 
-                      categories=10):
+def build_transfer_learning_model(model_architecture_name,
+                                  image_height, 
+                                  image_width, 
+                                  image_channels,
+                                  character_length, 
+                                  categories):
     """
-        VGG16 Convolutional Neural Network (CNN) using weights from ImageNet
-        to recognize CAPTCHA images.
+        Builds a Convolutional Neural Network (CNN) using a pre-trained model
+        (transfer learning) with weights established from ImageNet. The model
+        will be restructured to recognize CAPTCHA images.
 
-        Arguments to this function specify the characteristics of the input and
-        output layers.
+        Arguments to this function specify the characteristics of the model
+        architecture, input layer, and output layer.
 
         Postcondition: Model must be trained after being built
 
     Args:
+        model_architecture_name (string): name of the pre-trained model to be used
+                                          (e.g. MobileNet, VGG16, ResNet50)
+
         image_height (int): height (in pixels) of expected input CAPTCHA image 
 
         image_width (int): width (in pixels) of expected input CAPTCHA image
@@ -187,60 +191,24 @@ def build_VGG16_model(image_height=100,
     Returns:
         a compiled model ready for training
     """
-    base_model = VGG16(weights='imagenet',
-                       include_top=False,
-                       input_shape=(image_height + 10, image_width, image_channels))
-
-    flatten_layer = layers.Flatten()
-    prediction_layer = Dense(categories, activation='softmax')
-
-    model = Sequential([
-        base_model,
-        flatten_layer,
-        prediction_layer
-    ])
-
-    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-
-    return model
-
-
-
-
-def build_MOBILENET_model(image_height=100, 
-                          image_width=100, 
-                          image_channels=3,
-                          character_length=4, 
-                          categories=10):
-    """
-        MobileNet Convolutional Neural Network (CNN) using weights from ImageNet
-        to recognize CAPTCHA images.
-
-        Arguments to this function specify the characteristics of the input and
-        output layers.
-
-        Postcondition: Model must be trained after being built
-
-    Args:
-        image_height (int): height (in pixels) of expected input CAPTCHA image 
-
-        image_width (int): width (in pixels) of expected input CAPTCHA image
-
-        image_channels (int): channel count of expected input CAPTCHA image 
-                              ('3' for RGB, '1' for grayscale)
-
-        character_length (int): number of characters in expected input CAPTCHA image
-
-        categories (int): number of possible characters in expected input
-                          CAPTCHA image, specifying category count in the output layer
-                          ('10' for digits 0-9, '26' for alphabet, '36' for alphanumeric)
-
-    Returns:
-        a compiled model ready for training
-    """
-    base_model = MobileNet(weights='imagenet',
+    if model_architecture_name == 'MOBILE-NET':
+        base_model = MobileNet(weights='imagenet',
+                               include_top=False,
+                               input_shape=(image_height + 10, 
+                                            image_width, 
+                                            image_channels))
+    elif model_architecture_name == 'RESNET':
+        base_model = ResNet50(weights='imagenet',
+                              include_top=False,
+                              input_shape=(image_height + 10, 
+                                           image_width, 
+                                           image_channels))
+    elif model_architecture_name == 'VGG16':
+        base_model = VGG16(weights='imagenet',
                            include_top=False,
-                           input_shape=(image_height + 10, image_width, image_channels))
+                           input_shape=(image_height + 10, 
+                                        image_width, 
+                                        image_channels))
 
     flatten_layer = layers.Flatten()
     prediction_layer = Dense(categories, activation='softmax')
@@ -251,58 +219,9 @@ def build_MOBILENET_model(image_height=100,
         prediction_layer
     ])
 
-    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-
-    return model
-
-
-
-
-def build_RESNET_model(image_height=100, 
-                       image_width=100, 
-                       image_channels=3,
-                       character_length=4, 
-                       categories=10):
-    """
-        ResNet50 Convolutional Neural Network (CNN) using weights from ImageNet
-        to recognize CAPTCHA images.
-
-        Arguments to this function specify the characteristics of the input and
-        output layers.
-
-        Postcondition: Model must be trained after being built
-
-    Args:
-        image_height (int): height (in pixels) of expected input CAPTCHA image 
-
-        image_width (int): width (in pixels) of expected input CAPTCHA image
-
-        image_channels (int): channel count of expected input CAPTCHA image 
-                              ('3' for RGB, '1' for grayscale)
-
-        character_length (int): number of characters in expected input CAPTCHA image
-
-        categories (int): number of possible characters in expected input
-                          CAPTCHA image, specifying category count in the output layer
-                          ('10' for digits 0-9, '26' for alphabet, '36' for alphanumeric)
-
-    Returns:
-        a compiled model ready for training
-    """
-    base_model = ResNet50(weights='imagenet',
-                          include_top=False,
-                          input_shape=(image_height + 10, image_width, image_channels))
-
-    flatten_layer = layers.Flatten()
-    prediction_layer = Dense(categories, activation='softmax')
-
-    model = Sequential([
-        base_model,
-        flatten_layer,
-        prediction_layer
-    ])
-
-    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer='adam', 
+                  loss='categorical_crossentropy', 
+                  metrics=['accuracy'])
 
     return model
 

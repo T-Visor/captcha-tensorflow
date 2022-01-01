@@ -158,30 +158,19 @@ def get_trainable_neural_network():
     """
     model = None
 
-    if MODEL_ARCHITECTURE == 'VGG16':
-        model = build_VGG16_model(IMAGE_HEIGHT, 
-                                  IMAGE_WIDTH, 
-                                  IMAGE_CHANNELS,
-                                  DIMENSIONS, 
-                                  CATEGORIES)
-    elif MODEL_ARCHITECTURE == 'MOBILE-NET':
-        model = build_MOBILENET_model(IMAGE_HEIGHT,
-                                      IMAGE_WIDTH,
-                                      IMAGE_CHANNELS,
-                                      DIMENSIONS,
-                                      CATEGORIES)
-    elif MODEL_ARCHITECTURE == 'RESNET':
-        model = build_RESNET_model(IMAGE_HEIGHT,
-                                   IMAGE_WIDTH,
-                                   IMAGE_CHANNELS,
-                                   DIMENSIONS,
-                                   CATEGORIES)
-    elif MODEL_ARCHITECTURE == 'T-NET':  
+    if MODEL_ARCHITECTURE == 'T-NET':  
         model = build_TNET_model(IMAGE_HEIGHT, 
                                  IMAGE_WIDTH, 
                                  IMAGE_CHANNELS,
                                  DIMENSIONS, 
                                  CATEGORIES)
+    elif MODEL_ARCHITECTURE in ['VGG16', 'MOBILE-NET', 'RESNET']:
+        model = build_transfer_learning_model(MODEL_ARCHITECTURE,
+                                              IMAGE_HEIGHT,
+                                              IMAGE_WIDTH,
+                                              IMAGE_CHANNELS,
+                                              DIMENSIONS,
+                                              CATEGORIES)
     return model
 
 
