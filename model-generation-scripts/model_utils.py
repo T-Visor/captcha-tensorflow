@@ -12,13 +12,10 @@ from PIL import Image, ImageDraw
 from tensorflow.keras import datasets, layers, models
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.layers import *
-from tensorflow.keras.models import Model
-from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import *
 from tensorflow.keras.utils import to_categorical
-from tensorflow.keras.applications.vgg16 import VGG16
-from tensorflow.keras.applications import MobileNet
-from tensorflow.keras.applications.resnet50 import ResNet50
+from tensorflow.keras.models import Model, Sequential
+from tensorflow.keras.applications import MobileNet, ResNet50, VGG16
 
 session = tensorflow.compat.v1.Session()
 
@@ -210,7 +207,7 @@ def build_transfer_learning_model(model_architecture_name,
                                         image_width, 
                                         image_channels))
 
-    flatten_layer = layers.Flatten()
+    flatten_layer = Flatten()
     prediction_layer = Dense(categories, activation='softmax')
 
     model = Sequential([
