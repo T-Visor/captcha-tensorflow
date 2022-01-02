@@ -57,16 +57,16 @@ def main():
     print('=================================================================')
 
     # Train the model.
-    history = train_model(model, 
-                          captcha_dataframe, 
-                          train_indices, 
-                          validation_indices, 
-                          BATCH_SIZE, 
-                          TRAINING_EPOCHS,
-                          IMAGE_HEIGHT,
-                          IMAGE_WIDTH,
-                          DIMENSIONS,
-                          CATEGORIES)
+    history = train_captcha_recognition_model(model, 
+                                              captcha_dataframe, 
+                                              train_indices, 
+                                              validation_indices, 
+                                              BATCH_SIZE, 
+                                              TRAINING_EPOCHS,
+                                              IMAGE_HEIGHT,
+                                              IMAGE_WIDTH,
+                                              DIMENSIONS,
+                                              CATEGORIES)
 
     # Save the training history.
     with open(TRAINING_HISTORY_FILE_NAME, 'wb') as handle:

@@ -34,12 +34,12 @@ def create_captcha_dataframe(captcha_images_directory):
     files = glob.glob(os.path.join(captcha_images_directory, '*.png'))
     attributes = list(map(_get_captcha_label, files))
 
-    data_frame = pandas.DataFrame(attributes)
-    data_frame['file'] = files
-    data_frame.columns = ['label', 'file']
-    data_frame = data_frame.dropna()
+    captcha_dataframe = pandas.DataFrame(attributes)
+    captcha_dataframe['file'] = files
+    captcha_dataframe.columns = ['label', 'file']
+    captcha_dataframe = captcha_dataframe.dropna()
     
-    return data_frame
+    return captcha_dataframe
 
 
 
@@ -225,18 +225,47 @@ def build_transfer_learning_model(model_architecture_name,
 
 
 
-def train_model(model, 
-                data_frame, 
-                train_indices, 
-                validation_indices, 
-                batch_size,
-                training_epochs,
-                image_height, 
-                image_width, 
-                character_length, 
-                categories):                   
+def train_captcha_recognition_model(model, 
+                                    captcha_dataframe, 
+                                    train_indices, 
+                                    validation_indices, 
+                                    batch_size,
+                                    training_epochs,
+                                    image_height, 
+                                    image_width, 
+                                    character_length, 
+                                    categories):                   
+    """
+        Train a Deep Learning model to recognize CAPTCHA images preprocessed
+        with the CRABI algorithm using supervised learning.
 
-    training_set_iterator, validation_set_iterator = _get_CRABI_iterators(data_frame, 
+    Args:
+        model (tensorflow.keras.Model): the Deep Learning model to train
+
+        captcha_dataframe (pandas.DataFrame): the dataset for training
+    
+        train_indices (numpy.ndarray): indices of the CAPTCHA dataset used for training data
+
+        validation_indices (numpy.ndarray): indices of the CAPTCHA dataset used for validation data
+
+        batch_size (int): number of samples to process before the model is updated
+
+        training_epochs (int): number of passes through the entire dataset
+
+        image_height (int): height (in pixels) of expected input CAPTCHA image 
+
+        image_width (int): width (in pixels) of expected input CAPTCHA image
+
+        character_length (int): number of characters in expected input CAPTCHA image
+
+        categories (int): number of possible characters in expected input
+                          CAPTCHA image, specifying category count in the output layer
+                          ('10' for digits 0-9, '26' for alphabet, '36' for alphanumeric)
+
+    Returns:
+        a History object which contains accuracy/loss information from training
+    """
+    training_set_iterator, validation_set_iterator = _get_CRABI_iterators(captcha_dataframe, 
                                                                           train_indices, 
                                                                           validation_indices,
                                                                           batch_size, 
@@ -261,7 +290,7 @@ def train_model(model,
 
 
 
-def _get_CRABI_iterators(data_frame,
+def _get_CRABI_iterators(captcha_dataframe,
                          train_indices,
                          validation_indices,
                          batch_size,
@@ -269,8 +298,33 @@ def _get_CRABI_iterators(data_frame,
                          image_width, 
                          character_length, 
                          categories):
+    """
+        (HELPER FUNCTION)
 
-    training_set_iterator = generate_CRABI_preprocessed_images(data_frame, 
+    Args:
+        captcha_dataframe (pandas.DataFrame): the dataset for training
+    
+        train_indices (numpy.ndarray): indices of the CAPTCHA dataset used for training data
+
+        validation_indices (numpy.ndarray): indices of the CAPTCHA dataset used for validation data
+
+        batch_size (int): number of samples to process before the model is updated
+
+        image_height (int): height (in pixels) of expected input CAPTCHA image 
+
+        image_width (int): width (in pixels) of expected input CAPTCHA image
+
+        character_length (int): number of characters in expected input CAPTCHA image
+
+        categories (int): number of possible characters in expected input
+                          CAPTCHA image, specifying category count in the output layer
+                          ('10' for digits 0-9, '26' for alphabet, '36' for alphanumeric)
+
+    Returns:
+        pair of generator objects -> (training_set_iterator, validation_set_iterator)  
+    """
+
+    training_set_iterator = generate_CRABI_preprocessed_images(captcha_dataframe, 
                                                                train_indices,
                                                                for_training=True, 
                                                                batch_size=batch_size,
@@ -278,7 +332,7 @@ def _get_CRABI_iterators(data_frame,
                                                                image_width=image_width,
                                                                categories=categories)
     
-    validation_set_iterator = generate_CRABI_preprocessed_images(data_frame, 
+    validation_set_iterator = generate_CRABI_preprocessed_images(captcha_dataframe, 
                                                                  validation_indices,
                                                                  for_training=True, 
                                                                  batch_size=batch_size,
@@ -291,7 +345,7 @@ def _get_CRABI_iterators(data_frame,
 
 
 
-def generate_CRABI_preprocessed_images(data_frame, 
+def generate_CRABI_preprocessed_images(captcha_dataframe, 
                                        indices, 
                                        for_training, 
                                        batch_size=16, 
@@ -310,7 +364,7 @@ def generate_CRABI_preprocessed_images(data_frame,
         image a single-character label.
 
     Args:
-        data_frame (pandas.DataFrame): contains the file paths to the CAPTCHA images and their labels
+        captcha_dataframe (pandas.DataFrame): contains the file paths to the CAPTCHA images and their labels
         
         indices (int): specifies training indices, testing indices, or validation indices of the DataFrame
         
@@ -334,7 +388,7 @@ def generate_CRABI_preprocessed_images(data_frame,
     
     while True:
         for i in indices:
-            captcha = data_frame.iloc[i]
+            captcha = captcha_dataframe.iloc[i]
             file, label = captcha['file'], captcha['label']
             
             captcha_image = Image.open(file).convert('L') # open CAPTCHA image in gray-scale
@@ -376,7 +430,7 @@ def generate_CRABI_preprocessed_images(data_frame,
 
 def _get_attacher_images(captcha_height, captcha_width, character_length):
     """
-    (HELPER FUNCTION)
+        (HELPER FUNCTION)
 
     Args:
         captcha_height (int): height (in pixels) of the CAPTCHA image
