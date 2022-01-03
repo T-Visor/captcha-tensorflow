@@ -9,12 +9,10 @@ import pandas
 import tensorflow
 
 from PIL import Image, ImageDraw
-from tensorflow.keras import datasets, layers, models
 from tensorflow.keras.callbacks import ModelCheckpoint
-from tensorflow.keras.layers import *
-from tensorflow.keras.optimizers import *
-from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.models import Model, Sequential
+from tensorflow.keras.layers import Flatten, Dense, Input, Conv2D, MaxPooling2D, Dropout
+from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.applications import MobileNet, ResNet50, VGG16
 
 session = tensorflow.compat.v1.Session()
