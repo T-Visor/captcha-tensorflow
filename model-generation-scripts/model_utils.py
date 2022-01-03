@@ -15,6 +15,7 @@ from tensorflow.keras.layers import Flatten, Dense, Input, Conv2D, MaxPooling2D,
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.applications import MobileNet, ResNet50, VGG16
 
+ATTACHER_HEIGHT = 10
 session = tensorflow.compat.v1.Session()
 
 
@@ -126,7 +127,7 @@ def build_TNET_model(image_height,
     """
     model = Sequential(name='T-NET')
 
-    model.add(Input(shape=((image_height + 10), image_width, image_channels)))
+    model.add(Input(shape=((image_height + ATTACHER_HEIGHT), image_width, image_channels)))
     
     model.add(Conv2D(filters=16, kernel_size=(3,3), padding='same', activation='relu'))
     model.add(MaxPooling2D(pool_size=(2,2), padding='same'))
@@ -189,19 +190,19 @@ def build_transfer_learning_model(model_architecture_name,
     if model_architecture_name == 'MOBILE-NET':
         base_model = MobileNet(weights='imagenet',
                                include_top=False,
-                               input_shape=(image_height + 10, 
+                               input_shape=(image_height + ATTACHER_HEIGHT, 
                                             image_width, 
                                             image_channels))
     elif model_architecture_name == 'RESNET':
         base_model = ResNet50(weights='imagenet',
                               include_top=False,
-                              input_shape=(image_height + 10, 
+                              input_shape=(image_height + ATTACHER_HEIGHT, 
                                            image_width, 
                                            image_channels))
     elif model_architecture_name == 'VGG16':
         base_model = VGG16(weights='imagenet',
                            include_top=False,
-                           input_shape=(image_height + 10, 
+                           input_shape=(image_height + ATTACHER_HEIGHT, 
                                         image_width, 
                                         image_channels))
 
@@ -398,7 +399,7 @@ def generate_CRABI_preprocessed_images(captcha_dataframe,
 
             for j in range(len(label)):
                 # Create a blank image for CRABI-preprocessing.
-                combined_image = Image.new('RGB', (image_width, (image_height + 10)), 'white')
+                combined_image = Image.new('RGB', (image_width, (image_height + ATTACHER_HEIGHT)), 'white')
 
                 # Paste the CAPTCHA image first.
                 combined_image.paste(captcha_image, (0, 0))
@@ -441,7 +442,7 @@ def _get_attacher_images(captcha_height, captcha_width, character_length):
         in the implementation of CRABI (CAPTCHA Recognition With Attached Binary Images).
     """
     attacher_width = captcha_width
-    attacher_height = 10
+    attacher_height = ATTACHER_HEIGHT
     left_side = 0
     right_side = captcha_width
     attacher_images = []
