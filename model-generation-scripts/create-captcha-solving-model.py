@@ -5,7 +5,9 @@ import os
 import pickle
 import sys
 
-# Functions from other file.
+# Functions from other files.
+from captcha_dataset_utils import *
+from crabi_preprocessing_utils import * 
 from model_utils import *
 
 # Move one directory back to the project root.
