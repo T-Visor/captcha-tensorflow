@@ -2,7 +2,7 @@ import matplotlib.pyplot as pyplot
 import math
 import tensorflow
 
-from crabi_preprocessing_utils import *
+from crabi_preprocessor import *
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.models import Model, Sequential
 from tensorflow.keras.layers import Flatten, Dense, Input, Conv2D, MaxPooling2D, Dropout

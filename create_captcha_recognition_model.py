@@ -6,12 +6,10 @@ import pickle
 import sys
 
 # Functions from other files.
-from captcha_dataset_utils import *
-from crabi_preprocessing_utils import * 
-from model_utils import *
-
-# Move one directory back to the project root.
-os.chdir("..")
+sys.path.insert(0, 'auxiliary')
+from dataset_organizer import *
+from crabi_preprocessor import *
+from model_trainer import *
 
 # Suppress tensorflow log messages.
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
