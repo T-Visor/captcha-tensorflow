@@ -1,36 +1,34 @@
-# CAPTCHA Solving Using TensorFlow
+# DeCRUEHD  Framework
 
-Original Author: Jackon Yang (2017)
+**D**eep **C**APTCHA **R**ecognition **U**sing **E**ncapsulated Preprocessing and **H**eterogeneous **D**atasets
 
-Further Modified By: Turhan Kimbrough (2021)
+A research effort for using Deep Learning (DL) techniques to recognize text-based CAPTCHAs. 
+
+### Research Contributions:
+1. The capability to generate 'Heterogeneous' CAPTCHA image samples, whereby different CAPTCHA schemes are employed to create a diversified labelled dataset.
+2. Integrating the CRABI algorithm (**C**APTCHA **R**ecognition with **A**ttached **B**inary **I**mages) to preprocess CAPTCHA samples by attaching black and white bars as markers to the bottom of CAPTCHA image copies. This allows for CAPTCHA-text recognition on a per-character basis without the use of segmentation. 
+3. Demonstrating the effectiveness of this CAPTCHA-recognition pipeline through transfer (continuous) learning. This project uses Convolutional Neural Networks (CNNs) to recognize characters in CAPTCHA images.
 
 ---
 ## Requirements
 - Python 3
 - Python 'pip' package manager
 - Jupyter Notebook
-- Run the command 'pip install -r requirements.txt' in the project root directory to install the necessary Python modules
+- Python modules found in **requirements.txt** file
 
 ## Generate Dataset
-- Run the 'captcha-generator.py' file and supply it with command-line arguments
+- Run the **create_captcha_images.py** file with command-line arguments
 - The script will generate all numeric combinations of a fixed-digit CAPTCHA length for each iteration 
 - Example: 10,000 images for 4-digit CAPTCHAs, 1,000 images for 3-digit CAPTCHAs
-- Users can specify which CAPTCHA library for generation at run-time, allowing mixed datasets
+- Users specify the CAPTCHA library to use for image generation at run-time
 - All CAPTCHA images will be saved to a sub-directory within 'datasets' inside the project
 
-![alt text for screen
-readers](https://github.com/T-Visor/captcha-tensorflow/blob/master/pictures/captcha-generator-screenshot.png "script screenshot")
-
 ## Train the Model
-- Run the 'create-captcha-solving-model.py' file and supply it with command-line arguments
-- The script will train a convolutional neural network using the CAPTCHA images generated from the prior script
-- Note: make sure the CAPTCHA length argument and data directory name argument is consistent to the arguments used in 'captcha-generator.py'
-- Users can specify the batch size, model architecture (out of a set of choices), and number of training epochs at run-time
+- Run the **create_captcha_recognition_model.py** file with command-line arguments
+- The script will train a CNN to recognize CAPTCHA images
+- Note: make sure the CAPTCHA length argument and data directory name argument are consistent with arguments used to generate the training dataset
+- Users can specify the batch size, model architecture, and number of training epochs at run-time
 - When the script finishes, the training history will be saved in a serialized format (using 'pickle' library) along with the trained model. Both will be saved in the root of the project folder.
 
-![alt text for screen
-readers](https://github.com/T-Visor/captcha-tensorflow/blob/master/pictures/create-captcha-solving-model-screenshot.png "script screenshot")
-
 ## Model inference
-- No standardized template has been created for model inference (at least yet)
-- Examples of Jupyter notebook files with model inference can be found in the 'notebooks' subdirectory. The notebook files contain 'evaluation' in their file names.
+- Examples of Jupyter notebook files with model inference can be found in the **notebooks** subdirectory. The notebook files contain 'evaluation' in their file names.
