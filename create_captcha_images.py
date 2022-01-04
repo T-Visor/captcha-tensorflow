@@ -2,7 +2,6 @@
 
 from captcha.image import ImageCaptcha
 from claptcha import Claptcha
-from multicolorcaptcha import *
 from PIL import Image, ImageDraw, ImageFont
 from tqdm import tqdm, tnrange
 import argparse
@@ -99,7 +98,7 @@ def main():
     print('Saving to: ' + DESTINATION_DIRECTORY)
     print('--------------------------------------')
 
-    # Generate the numeric CAPTCHAs.
+    # Create the labelled CAPTCHA images.
     with tqdm(total=(ITERATIONS * UNIQUE_VALUES)) as progress_bar:
         for _ in range(0, ITERATIONS):
             for i in range (0, UNIQUE_VALUES):
@@ -127,7 +126,7 @@ def parse_command_line_arguments():
     parser.add_argument('-l', '--length', type=int, choices=range(1, 6), nargs=1, required=True, 
                         help='Number of characters for each CAPTCHA image.')
 
-    parser.add_argument('-t', '--captcha_type', nargs=1, choices=('SIMPLE', 'COMPLEX', 'MULTI-COLOR', 'MONOCHROME'), 
+    parser.add_argument('-t', '--captcha_type', nargs=1, choices=('SIMPLE', 'COMPLEX', 'MONOCHROME'), 
                         required=True,
                         help='Variation of CAPTCHA image to create.')
 
@@ -174,12 +173,6 @@ def generate_numeric_captcha_image(number):
         captcha_image.generate(captcha_text)  
         captcha_image.write(captcha_text, DESTINATION_DIRECTORY + '/' +
                             captcha_text + '_' + str(uuid.uuid4()) + '.png')
-    elif CAPTCHA_TYPE == 'MULTI-COLOR':
-        generator = CaptchaGenerator(0)
-        generated_captcha = generator.gen_captcha_image(0, captcha_text, True, True)
-        captcha_image = generated_captcha['image']
-        captcha_image.save(DESTINATION_DIRECTORY + '/' + captcha_text + '_' +
-                           str(uuid.uuid4()) + '.png')
     elif CAPTCHA_TYPE == 'MONOCHROME':
         captcha_image = Claptcha(captcha_text, get_font(), (IMAGE_HEIGHT,IMAGE_WIDTH),
                                  resample=Image.BICUBIC, noise=0.0)
