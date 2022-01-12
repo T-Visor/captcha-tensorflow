@@ -91,6 +91,7 @@ def main():
     # Display CAPTCHA generation information.
     print('--------------------------------------')
     print('GENERATING CAPTCHA IMAGES\n')
+    print('CAPTCHA type: {}'.format(CAPTCHA_TYPE))
     print('Unique values: {}'.format(str(UNIQUE_VALUES)))
     print('CAPTCHA character length: {}'.format(str(CAPTCHA_LENGTH)))
     print('Iterations: {}'.format(str(ITERATIONS)))
