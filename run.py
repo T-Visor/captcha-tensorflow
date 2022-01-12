@@ -19,3 +19,14 @@ if not testing_set_exists:
     subprocess.call([sys.executable, 'create_captcha_images.py', '-i', '1', '-l', '4', '-t', 'SIMPLE', '-d', testing_set_folder])
     subprocess.call([sys.executable, 'create_captcha_images.py', '-i', '1', '-l', '4', '-t', 'COMPLEX', '-d', testing_set_folder])
     subprocess.call([sys.executable, 'create_captcha_images.py', '-i', '1', '-l', '4', '-t', 'MONOCHROME', '-d', testing_set_folder])
+
+# Train MobileNet model
+subprocess.call([sys.executable, 
+                 'create_captcha_recognition_model.py', 
+                 '-d', training_set_folder, 
+                 '-l', '4', 
+                 '-e', '50', 
+                 '-b', '32', 
+                 '-a', 'MOBILE-NET',
+                 '-m', 'mobilenet', 
+                 '-t', 'mobilenet-history'])
