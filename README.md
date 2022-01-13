@@ -45,7 +45,7 @@ options:
                         The name of the destination directory within "datasets" to save the CAPTCHA images to
 ```
 
-![alt text](images/sample-captcha-images.png "CRABI preprocessing example"){:height="50%" width="50%"}
+![alt text](images/sample-captcha-images.png "Sample CAPTCHA images")
 
 ## Train the Model
 
