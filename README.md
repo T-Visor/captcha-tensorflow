@@ -9,6 +9,8 @@ A research effort for using Deep Learning (DL) techniques to recognize text-base
 2. Integrating the CRABI algorithm (**C**APTCHA **R**ecognition with **A**ttached **B**inary **I**mages) to preprocess CAPTCHA samples by attaching black and white bars as markers to the bottom of CAPTCHA image copies. This allows for CAPTCHA-text recognition on a per-character basis without the use of segmentation. 
 3. Demonstrating the effectiveness of this CAPTCHA-recognition pipeline through transfer (continuous) learning. This project uses Convolutional Neural Networks (CNNs) to recognize characters in CAPTCHA images.
 
+![alt text](images/crabi-preprocessing-example.png "CRABI preprocessing example")
+
 ---
 ## Requirements
 - Python 3.9
@@ -42,6 +44,8 @@ options:
   -d DESTINATION, --destination DESTINATION
                         The name of the destination directory within "datasets" to save the CAPTCHA images to
 ```
+
+![alt text](images/sample-captcha-images.png "CRABI preprocessing example")
 
 ## Train the Model
 
