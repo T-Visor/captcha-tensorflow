@@ -45,6 +45,7 @@ options:
                         The name of the destination directory within "datasets" to save the CAPTCHA images to
 ```
 
+Some CAPTCHA image samples:
 ![alt text](images/sample-captcha-images.png "Sample CAPTCHA images")
 
 ## Train the Model
