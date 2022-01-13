@@ -75,7 +75,7 @@ options:
                         Name of the destination file name for storing training history information.
 ```
 
-## Model Inference
-Examples of Jupyter notebook files with model inference can be found in the **notebooks** subdirectory. 
+## Model Evaluation
+Examples of Jupyter notebook files with model evaluation can be found in the **notebooks** subdirectory. 
 
 The notebook files contain 'evaluation' in their file names.
