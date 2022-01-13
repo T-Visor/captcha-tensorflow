@@ -20,7 +20,6 @@ Some CAPTCHA image samples:
 ---
 ## Requirements
 - Python 3.9
-- Python 'pip' package manager
 - Jupyter Notebook
 - Python modules found in **requirements.txt** file
 
