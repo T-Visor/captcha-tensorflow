@@ -46,6 +46,7 @@ options:
 ```
 
 Some CAPTCHA image samples:
+
 ![alt text](images/sample-captcha-images.png "Sample CAPTCHA images")
 
 ## Train the Model
