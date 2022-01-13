@@ -49,7 +49,7 @@ Some CAPTCHA image samples:
 
 ![alt text](images/sample-captcha-images.png "Sample CAPTCHA images")
 
-## Train the Model
+## Model Training
 
 ```
 $ python3 create_captcha_recognition_model.py
@@ -74,7 +74,7 @@ options:
                         Name of the destination file name for storing training history information.
 ```
 
-## Model inference
+## Model Inference
 Examples of Jupyter notebook files with model inference can be found in the **notebooks** subdirectory. 
 
 The notebook files contain 'evaluation' in their file names.
