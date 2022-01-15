@@ -21,7 +21,12 @@ Some CAPTCHA image samples:
 ## Requirements
 - Python 3.9
 - Jupyter Notebook
-- Python modules found in **requirements.txt** file
+
+Install the required Python modules by running the following command:
+
+``` 
+$ pip3 install -r requirements.txt
+```
 
 ## Example Training Workflow
 New users are recommended to execute the following command for a sample workflow:
