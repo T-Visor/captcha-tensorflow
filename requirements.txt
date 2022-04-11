@@ -6,3 +6,4 @@ pandas
 tensorflow
 Pillow
 ipynb
+jupyter
